@@ -156,35 +156,42 @@
 
 ### 6.2 資料結構
 
-使用 Astro content collection，每張作品一筆資料。欄位：
+使用 Astro content collection，每張作品一個 YAML 檔，放在 `src/content/works/`。
+
+- **檔名就是 slug**（網址用的英文代稱），例如 `lisbon-tram.yaml` → `/works/lisbon-tram/`。只能用小寫英文、數字和 `-`。
+- **圖檔用同一個檔名**，放在 `src/assets/works/`，例如 `lisbon-tram.jpg`。程式會自動找到對應的圖，資料檔裡不用寫 `slug` 和 `image`。
+
+資料檔的欄位：
 
 | 欄位 | 必填 | 說明 |
 |---|---|---|
-| `slug` | 是 | 網址用的英文代稱，例如 `lisbon-tram` |
 | `title.en` / `title.zh` | 是 | 中英文標題 |
 | `year` | 是 | 創作年份 |
 | `category` | 是 | `places`、`people`、`flowers` 三選一 |
 | `medium.en` / `medium.zh` | 是 | 媒材，例如 `Digital illustration` / `數位插畫` |
 | `edition.en` / `edition.zh` | 否 | 限量版資訊，例如 `Archival pigment print on cotton rag paper · Edition of 25` |
-| `image` | 是 | 圖片路徑 |
 | `alt.en` / `alt.zh` | 是 | 給螢幕閱讀器的圖片描述 |
 | `order` | 是 | 排序用的數字，越小越前面 |
 
 用 schema 驗證資料，以下情況建置要失敗，並給出清楚的錯誤訊息（指出是哪一筆、哪個欄位）：
 
-- 缺少必填欄位
+- 缺少必填欄位，或是有拼錯、不認識的欄位
 - `order` 重複
-- `slug` 重複，或是 `slug` 和圖檔名稱對不上
+- 資料檔找不到同名的圖檔，或圖檔找不到同名的資料檔
+- 檔名有大寫、空白等不能放進網址的字元
 
 ### 6.3 圖片規則
 
 - 網站上的圖，**長邊最大約 2000 像素**，不加浮水印。看得清楚，但不足以拿去印刷。
 - 原始大檔**不要放進 repo**。Yunya 會先匯出長邊約 2000 到 3000 像素的 JPG 再放進來。在 `.gitignore` 排除常見的原始檔格式（例如 `.procreate`、`.psd`、`.tif`）。
-- 圖片放在 `src/assets/works/`，檔名和 `slug` 一致。
+- 圖片放在 `src/assets/works/`，檔名和資料檔一致（見 6.2）。
 
 ### 6.4 開發時的暫代內容
 
 真正的作品還沒放進來之前，用 6 到 9 張暫代圖片（不同長寬比的純色或漸層塊）和假資料，讓版面可以先做出來。暫代資料要容易一次清除。
+
+- 暫代作品的資料檔和圖檔，檔名都以 `placeholder-` 開頭。清除時刪掉 `src/content/works/placeholder-*` 和 `src/assets/works/placeholder-*` 即可。
+- 「暫代內容」包含**暫代作品**和**暫代頭像**：還有任何一張 `placeholder-` 作品，或還沒放入真的頭像（`src/assets/avatar.jpg`）時，都算還有暫代內容。
 
 - 只要網站上還有暫代內容，每一頁都自動加上 `<meta name="robots" content="noindex">`，`robots.txt` 也暫時擋住所有爬蟲。暫代內容清除後，自動恢復成允許所有爬蟲（見第 7 節）。
 
@@ -213,16 +220,17 @@
 
 ## 9. 開發流程
 
-請照這個順序進行，每完成一個階段就停下來，讓 Yunya 確認後再繼續。每個階段經過 Yunya 確認後就 commit 一次；repo 建好之後才推送。每個階段的功能都要附上對應的測試，而且全部測試都要通過，才算完成。
+請照這個順序進行，每完成一個階段就停下來，讓 Yunya 確認後再繼續。每個階段在自己的 branch 開發，經過 Yunya 確認後透過 GitHub PR 合併（規則見 CLAUDE.md）。每個階段的功能都要附上對應的測試，而且全部測試都要通過，才算完成。
 
 1. **建立專案**：初始化 Astro 專案，設定 TypeScript、i18n、sitemap，以及 GitHub Actions 部署流程。
 2. **版面骨架**：頁首、頁尾、語言切換，以及三種頁面的基本結構，用暫代內容。
-3. **作品牆和分類篩選**。
-4. **單張作品頁**：包含上一張、下一張和鍵盤操作。
-5. **關於我頁面**。
-6. **SEO、無障礙、效能**：檢查和調整。
-7. **部署**：確認 GitHub Pages 上線正常。
-8. **放入真正的作品**：清除暫代內容。
+3. **視覺設計**：研究參考網站，用 Yunya 的真正作品（放在本機的 `design-samples/`，不 commit）做 2 到 3 個可以點的視覺方向原型，讓 Yunya 選擇。選定後寫成具體的設計規格（字型、字級、間距、顏色數值、各頁版面），更新到第 2 節。第 4 到 6 階段都照這份規格做。
+4. **作品牆和分類篩選**。
+5. **單張作品頁**：包含上一張、下一張和鍵盤操作。
+6. **關於我頁面**。
+7. **SEO、無障礙、效能**：檢查和調整。
+8. **部署**：確認 GitHub Pages 上線正常。
+9. **放入真正的作品**：清除暫代內容。
 
 ## 10. 說明文件
 
@@ -236,7 +244,7 @@
 ## 11. 待辦事項（等 Yunya 提供）
 
 - [x] GitHub 帳號和 repo 名稱：`Yunya-Hsu/Yunya-Hsu.github.io`
-- [ ] 在 github.com 建立空的 `Yunya-Hsu.github.io` repo（第 1 階段結束、準備推送時）
+- [x] 建立 `Yunya-Hsu.github.io` repo（已建立，公開）
 - [ ] 標誌「Yunya」要用的字型
 - [ ] 作品圖檔和每張作品的資料（標題、年份、媒材、版數）
 - [ ] IG 頭像的圖檔

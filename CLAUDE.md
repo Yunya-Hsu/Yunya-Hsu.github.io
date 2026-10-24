@@ -30,6 +30,8 @@ Node 版本以 `.nvmrc` 為準（本機和 CI 共用，寫死到 patch 版，因
 - 新功能、修 bug 等任何變更都要開新的 branch，例如 `feat/work-wall`、`fix/lang-switch`。不要直接 commit 或推送到 `main`。
 - 分支合併一律是：推送 branch → 在 GitHub 開 PR → **在 GitHub 上 merge**。**不可以在本機把 branch merge 進 `main`。**
 - 開 PR 時，PR 內文用 Matt Pocock 的 `pr` skill（`mattpocock-skills:pr`）撰寫。
+- GitHub 上只允許 **squash merge**，合併後自動刪除遠端 branch。`main` 有保護規則：一定要透過 PR，而且 `test` 檢查要通過。
+- Yunya 說 PR「merged」之後，馬上：`git switch main` → `git pull --prune` → `git prune` → 確認 `git diff --quiet main <branch>` 沒有差異後，用 `git branch -D <branch>` 刪掉本機 branch（squash 之後 `-d` 會拒絕），再確認 `main` 的部署成功。
 - 只有 Yunya 要求時才 commit、推送或開 PR。
 
 ### 依賴套件

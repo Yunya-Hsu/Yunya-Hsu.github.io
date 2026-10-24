@@ -1,0 +1,14 @@
+---
+import type { GetStaticPaths } from 'astro';
+import WorkPage from '../../../components/pages/WorkPage.astro';
+import { getWorks } from '../../../lib/content';
+
+export const getStaticPaths = (async () => {
+  const works = await getWorks();
+  return works.map((work) => ({ params: { slug: work.slug }, props: { work } }));
+}) satisfies GetStaticPaths;
+
+const { work } = Astro.props;
+---
+
+<WorkPage locale="zh" work={work} />

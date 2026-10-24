@@ -1,0 +1,75 @@
+---
+import { Image } from 'astro:assets';
+import { localizePath } from '../../i18n/paths';
+import { t, type Locale } from '../../i18n/ui';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { Work } from '../../lib/works';
+
+interface Props {
+  locale: Locale;
+  work: Work;
+}
+
+const { locale, work } = Astro.props;
+const title = work.title[locale];
+const medium = work.medium[locale];
+const description = locale === 'zh' ? `${title}，${work.year}。${medium}。` : `${title}, ${work.year}. ${medium}.`;
+---
+
+<BaseLayout locale={locale} title={`${title} — Yunya Hsu`} description={description} path={`/works/${work.slug}/`}>
+  <article class="work">
+    <Image
+      src={work.image}
+      alt={work.alt[locale]}
+      widths={[800, 1200, 1600, 2000]}
+      sizes="100vw"
+      loading="eager"
+      class="artwork"
+    />
+    <div class="info">
+      <h1>{title}</h1>
+      <p>{work.year}</p>
+      <p>{medium}</p>
+      {work.edition && <p>{work.edition[locale]}</p>}
+    </div>
+    <p class="back"><a href={localizePath(locale, '/')}>{t(locale, 'work.back')}</a></p>
+  </article>
+</BaseLayout>
+
+<style>
+  .work {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* Keep the whole artwork on one screen (header + info take roughly 12rem). */
+  .artwork {
+    width: auto;
+    max-height: calc(100svh - 12rem);
+    object-fit: contain;
+  }
+
+  .info {
+    text-align: center;
+    color: var(--color-muted);
+    font-size: var(--text-small);
+  }
+
+  .info h1 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: inherit;
+    font-weight: 500;
+  }
+
+  .info p,
+  .back {
+    margin: 0;
+  }
+
+  .back {
+    font-size: var(--text-small);
+  }
+</style>

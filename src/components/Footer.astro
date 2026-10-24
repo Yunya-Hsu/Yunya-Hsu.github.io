@@ -1,0 +1,45 @@
+---
+import { t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <p>© {year} {t(locale, 'site.name')}</p>
+  <ul>
+    <li><a href="https://www.instagram.com/yours_yunya/" rel="me">Instagram</a></li>
+    <li><a href="https://www.threads.com/@yours_yunya" rel="me">Threads</a></li>
+  </ul>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    width: 100%;
+    max-width: var(--max-width);
+    margin-inline: auto;
+    padding: 3rem var(--gutter) 2rem;
+    color: var(--color-muted);
+    font-size: var(--text-small);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+</style>
