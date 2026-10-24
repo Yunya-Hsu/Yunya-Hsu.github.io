@@ -36,9 +36,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - id: node
+        run: echo "version=$(cat .nvmrc)" >> "$GITHUB_OUTPUT"
       - uses: withastro/action@v6
         with:
-          node-version: 22
+          node-version: ${{ steps.node.outputs.version }}
 
   deploy:
     needs: build
