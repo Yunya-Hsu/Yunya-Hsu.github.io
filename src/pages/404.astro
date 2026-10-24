@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// GitHub Pages serves a single 404.html for every language, so this page is bilingual.
+---
+
+<BaseLayout locale="en" title="Page not found — Yunya Hsu" description="This page doesn't exist.">
+  <div class="not-found">
+    <section>
+      <h1>Page not found</h1>
+      <p><a href="/">Back to the work</a></p>
+    </section>
+    <section lang="zh-Hant">
+      <h2>找不到這個頁面</h2>
+      <p><a href="/zh/">回到作品牆</a></p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    gap: 2rem;
+    padding-block: 4rem;
+    text-align: center;
+  }
+
+  h1,
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: var(--text-small);
+  }
+</style>

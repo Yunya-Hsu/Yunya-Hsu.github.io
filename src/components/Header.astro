@@ -1,0 +1,104 @@
+---
+import { localizePath } from '../i18n/paths';
+import { htmlLang, locales, t, type Locale } from '../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  /** Locale-neutral path of the current page, used for the language switch. Omit to hide the switch. */
+  path?: string;
+}
+
+const { locale, path } = Astro.props;
+const home = localizePath(locale, '/');
+const about = localizePath(locale, '/about/');
+// "Work" is current on the wall and on single work pages.
+const onWork = path !== undefined && (path === '/' || path.startsWith('/works/'));
+const onAbout = path === '/about/';
+
+// Short visible label; the accessible name is the full language name and must contain the visible text (WCAG 2.5.3).
+const langLabels: Record<Locale, { short: string; name: string }> = {
+  en: { short: 'EN', name: 'EN English' },
+  zh: { short: '中', name: '中文' },
+};
+---
+
+<header class="site-header">
+  <a class="logo" href={home}>Yunya</a>
+  <nav aria-label={t(locale, 'nav.label')}>
+    <ul>
+      <li><a href={home} aria-current={onWork ? 'page' : undefined}>{t(locale, 'nav.work')}</a></li>
+      <li><a href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a></li>
+    </ul>
+    {
+      path !== undefined && (
+        <ul class="lang" aria-label={t(locale, 'lang.label')}>
+          {locales.map((l) => (
+            <li>
+              <a
+                href={localizePath(l, path)}
+                lang={htmlLang[l]}
+                hreflang={htmlLang[l]}
+                aria-label={langLabels[l].name}
+                aria-current={l === locale ? 'true' : undefined}
+              >
+                {langLabels[l].short}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: var(--max-width);
+    margin-inline: auto;
+    padding: 1.5rem var(--gutter);
+  }
+
+  .logo {
+    font-family: var(--font-logo);
+    font-size: 1.25rem;
+    letter-spacing: 0.02em;
+  }
+
+  nav {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    font-size: var(--text-small);
+  }
+
+  ul {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  nav a {
+    color: var(--color-muted);
+  }
+
+  nav a[aria-current] {
+    color: var(--color-text);
+  }
+
+  .lang {
+    gap: 0;
+  }
+
+  .lang li + li::before {
+    content: '/';
+    padding-inline: 0.4em;
+    color: var(--color-muted);
+  }
+</style>

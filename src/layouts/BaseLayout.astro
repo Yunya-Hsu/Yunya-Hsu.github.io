@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { localizePath } from '../i18n/paths';
+import { htmlLang, locales, t, type Locale } from '../i18n/ui';
+import { hasPlaceholderContent } from '../lib/content';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  /** Locale-neutral path of this page. Omit for pages without a translated twin (the 404). */
+  path?: string;
+  /** Override <html lang>, e.g. for the bilingual 404. */
+  lang?: string;
+}
+
+const { locale, title, description, path, lang = htmlLang[locale] } = Astro.props;
+const site = Astro.site!;
+const noindex = await hasPlaceholderContent();
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {
+      path !== undefined && (
+        <>
+          <link rel="canonical" href={new URL(localizePath(locale, path), site)} />
+          {locales.map((l) => (
+            <link rel="alternate" hreflang={htmlLang[l]} href={new URL(localizePath(l, path), site)} />
+          ))}
+          <link rel="alternate" hreflang="x-default" href={new URL(localizePath('en', path), site)} />
+        </>
+      )
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t(locale, 'skip')}</a>
+    <Header locale={locale} path={path} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+  </body>
+</html>
