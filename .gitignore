@@ -1,0 +1,33 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+
+# environment
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# original artwork files: never commit these (see SPEC 6.3)
+*.procreate
+*.psd
+*.psb
+*.tif
+*.tiff
+*.kra
+*.clip
+*.ai
+*.heic
+*.raw
+*.dng
+
+# test output
+test-results/
+playwright-report/
