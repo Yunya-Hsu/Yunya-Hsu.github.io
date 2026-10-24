@@ -14,7 +14,7 @@ npm test           # Vitest 單元測試（tests/unit/）
 npm run test:e2e   # Playwright 瀏覽器測試（tests/e2e/），會自動建置並在 4400 port 預覽
 ```
 
-Node 22（見 `.nvmrc`）。非互動式 shell 不會載入 `~/.zshrc`，執行 npm 前先 `. ~/.nvm/nvm.sh`。
+Node 版本以 `.nvmrc` 為準（本機和 CI 共用，寫死到 patch 版，因為 Astro 要求 >=22.23.4）。非互動式 shell 不會載入 `~/.zshrc`，執行 npm 前先 `. ~/.nvm/nvm.sh`。
 
 ## 開發原則
 
