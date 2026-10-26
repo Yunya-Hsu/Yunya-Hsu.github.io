@@ -10,7 +10,7 @@ test.describe('header', () => {
   });
 
   test('marks the current section', async ({ page }) => {
-    const work = page.getByRole('button', { name: 'Work', exact: true });
+    const work = page.locator('summary', { hasText: 'Work' });
     await page.goto('/about/');
     await expect(page.getByRole('link', { name: 'About', exact: true })).toHaveAttribute('aria-current', 'page');
     await expect(work).not.toHaveAttribute('aria-current');
@@ -60,7 +60,7 @@ test.describe('header', () => {
     await page.goto('/about/');
     const items = [
       page.getByRole('link', { name: 'About', exact: true }),
-      page.getByRole('button', { name: 'Work', exact: true }),
+      page.locator('summary', { hasText: 'Work' }),
       page.getByRole('link', { name: 'EN English' }),
       page.getByRole('link', { name: '中文' }),
     ];

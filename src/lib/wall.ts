@@ -14,7 +14,7 @@ export function wallCategory(path: string): Category | undefined {
 }
 
 /** Every wall cell is 4:5 (width:height), the shape of most works (SPEC 5.2). */
-export const CELL_RATIO = 4 / 5;
+const CELL_RATIO = 4 / 5;
 
 /**
  * Width of a work inside its cell, as a percentage of the cell width, so the whole work fits

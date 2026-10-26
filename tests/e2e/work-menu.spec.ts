@@ -1,30 +1,44 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const workButton = (page: Page) => page.getByRole('button', { name: 'Work', exact: true });
+// Work is a native <summary>; Playwright doesn't map <summary> to a role, so find it by element.
+const workButton = (page: Page, name = 'Work') => page.locator('summary', { hasText: name });
+const disclosure = (page: Page) => page.locator('details.work-menu');
 const menu = (page: Page) => page.locator('#work-menu');
 
-test('Work is a button, not a link, and its menu starts closed', async ({ page }) => {
+test('Work is a disclosure, not a link, and its menu starts closed', async ({ page }) => {
   await page.goto('/about/');
   await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Work' })).toHaveCount(0);
-  await expect(workButton(page)).toHaveAttribute('aria-expanded', 'false');
+  await expect(disclosure(page)).not.toHaveAttribute('open');
   await expect(menu(page)).toBeHidden();
 });
 
-test('clicking or tapping Work opens the categories and clicking again closes them', async ({ page }) => {
+test('tapping Work opens the categories and tapping again closes them', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch');
+  await page.goto('/about/');
+  await workButton(page).tap();
+  await expect(disclosure(page)).toHaveAttribute('open');
+  await expect(menu(page).getByRole('link')).toHaveText(['Limited Edition Prints', 'Postcards']);
+  await workButton(page).tap();
+  await expect(disclosure(page)).not.toHaveAttribute('open');
+});
+
+test('with a mouse, clicking Work keeps the menu open and leaving closes it', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'touch screens have no mouse');
   await page.goto('/about/');
   await workButton(page).click();
-  await expect(workButton(page)).toHaveAttribute('aria-expanded', 'true');
-  await expect(menu(page).getByRole('link')).toHaveText(['Limited Edition Prints', 'Postcards']);
+  await expect(menu(page)).toBeVisible();
   await workButton(page).click();
-  await expect(workButton(page)).toHaveAttribute('aria-expanded', 'false');
+  await expect(menu(page)).toBeVisible();
+  await page.mouse.move(5, 5);
+  await expect(menu(page)).toBeHidden();
 });
 
 test('choosing a category opens its wall', async ({ page }) => {
   await page.goto('/zh/about/');
-  await page.getByRole('button', { name: '作品', exact: true }).click();
+  await workButton(page, '作品').click();
   await menu(page).getByRole('link', { name: '明信片' }).click();
   await expect(page).toHaveURL('/zh/postcards/');
-  await page.getByRole('button', { name: '作品', exact: true }).click();
+  await workButton(page, '作品').click();
   await menu(page).getByRole('link', { name: '限量版畫' }).click();
   await expect(page).toHaveURL('/zh/');
 });
@@ -103,7 +117,7 @@ test('works from the keyboard and Escape closes it', async ({ page, isMobile }) 
   await expect(menu(page)).toBeHidden();
   await expect(workButton(page)).toBeFocused();
   // Tabbing past the last category closes it.
-  await page.keyboard.press('Space');
+  await page.keyboard.press(' ');
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
@@ -111,11 +125,11 @@ test('works from the keyboard and Escape closes it', async ({ page, isMobile }) 
   await expect(menu(page)).toBeHidden();
 });
 
-test('the menu opens without JavaScript when Work gets focus', async ({ browser }) => {
+test('the menu opens with a click and without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto('/about/');
-  await workButton(page).focus();
+  await workButton(page).click();
   await expect(menu(page)).toBeVisible();
   await menu(page).getByRole('link', { name: 'Postcards' }).click();
   await expect(page).toHaveURL('/postcards/');

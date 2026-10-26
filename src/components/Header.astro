@@ -54,31 +54,26 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
   </a>
   <nav class="main" aria-label={t(locale, 'nav.label')}>
     <ul>
-      {/* Not a link: Work always asks which category to open (SPEC 5.1). */}
-      <li class="work-menu">
-        <button
-          type="button"
-          class="nav-item"
-          aria-expanded="false"
-          aria-controls="work-menu"
-          aria-current={onWork ? 'true' : undefined}
-        >
-          {t(locale, 'nav.work')}
-        </button>
-        <div class="menu" id="work-menu">
-          <ul>
-            {categories.map((category) => (
-              <li>
-                <a
-                  href={localizePath(locale, wallPath(category))}
-                  aria-current={category === currentCategory ? 'page' : undefined}
-                >
-                  <span>{t(locale, `category.${category}`)}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Not a link: Work always asks which category to open (SPEC 5.1). A native disclosure, so a click or tap
+          opens it in every browser even without JS; the script adds hover. */}
+      <li>
+        <details class="work-menu">
+          <summary class="nav-item" aria-current={onWork ? 'true' : undefined}>{t(locale, 'nav.work')}</summary>
+          <div class="menu" id="work-menu">
+            <ul>
+              {categories.map((category) => (
+                <li>
+                  <a
+                    href={localizePath(locale, wallPath(category))}
+                    aria-current={category === currentCategory ? 'page' : undefined}
+                  >
+                    <span>{t(locale, `category.${category}`)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
       </li>
       <li>
         <a class="nav-item" href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a>
@@ -88,30 +83,36 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 </header>
 
 <script>
-  const item = document.querySelector<HTMLElement>('.work-menu')!;
-  const button = item.querySelector('button')!;
+  const menu = document.querySelector<HTMLDetailsElement>('.work-menu')!;
+  const summary = menu.querySelector('summary')!;
 
-  function setOpen(open: boolean) {
-    button.setAttribute('aria-expanded', String(open));
-  }
-
-  button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
-
-  // Escape closes the menu even while the pointer still hovers it, until the pointer leaves.
-  item.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    setOpen(false);
-    item.dataset.dismissed = '';
-    button.focus();
+  // With a mouse the menu follows the pointer: entering opens it, leaving closes it, and clicking Work keeps it
+  // open instead of toggling it shut. Touch, pen and keyboard keep the native click-to-toggle.
+  let lastPointer = '';
+  summary.addEventListener('pointerdown', (event) => (lastPointer = event.pointerType));
+  summary.addEventListener('click', (event) => {
+    if (lastPointer === 'mouse' && menu.open) event.preventDefault();
+    lastPointer = '';
   });
-  item.addEventListener('pointerleave', () => delete item.dataset.dismissed);
+  menu.addEventListener('pointerenter', (event) => {
+    if (event.pointerType === 'mouse') menu.open = true;
+  });
+  menu.addEventListener('pointerleave', (event) => {
+    if (event.pointerType === 'mouse') menu.open = false;
+  });
+
+  menu.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !menu.open) return;
+    menu.open = false;
+    summary.focus();
+  });
 
   // Close when focus or a tap moves anywhere outside the menu.
-  item.addEventListener('focusout', (event) => {
-    if (!item.contains(event.relatedTarget as Node | null)) setOpen(false);
+  menu.addEventListener('focusout', (event) => {
+    if (!menu.contains(event.relatedTarget as Node | null)) menu.open = false;
   });
   document.addEventListener('click', (event) => {
-    if (!item.contains(event.target as Node)) setOpen(false);
+    if (!menu.contains(event.target as Node)) menu.open = false;
   });
 </script>
 
@@ -189,11 +190,11 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
      (Work's hover already opens its menu). */
   nav a:not([aria-current]):hover,
   .nav-item:not([aria-current]):hover {
-    color: #fff;
-    background-color: var(--color-footer-text);
+    color: var(--color-hover-text);
+    background-color: var(--color-hover-bg);
     box-shadow:
-      -6px 0 0 var(--color-footer-text),
-      6px 0 0 var(--color-footer-text);
+      -6px 0 0 var(--color-hover-bg),
+      6px 0 0 var(--color-hover-bg);
   }
 
   nav a[aria-current],
@@ -207,8 +208,17 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     position: relative;
   }
 
-  .menu {
+  /* Work is a <summary>; drop the disclosure triangle (Safari draws it with its own pseudo-element). */
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
     display: none;
+  }
+
+  /* <details> shows and hides the menu itself. */
+  .menu {
     position: absolute;
     top: 100%;
     left: 50%;
@@ -219,16 +229,6 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     text-transform: none;
     letter-spacing: normal;
     font-weight: 400;
-  }
-
-  .nav-item[aria-expanded='true'] + .menu {
-    display: block;
-  }
-
-  @media (hover: hover) {
-    .work-menu:hover:not([data-dismissed]) .menu {
-      display: block;
-    }
   }
 
   /* Rows run edge to edge, so every hover patch is the full width of the menu. */

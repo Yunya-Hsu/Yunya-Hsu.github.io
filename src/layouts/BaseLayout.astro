@@ -41,8 +41,6 @@ const noindex = await hasPlaceholderContent();
         </>
       )
     }
-    {/* Without JS, focusing Work (tap or Tab) still opens the category menu (SPEC 5.1). */}
-    <noscript><style is:inline>.work-menu:focus-within .menu { display: block; }</style></noscript>
   </head>
   <body>
     <a class="skip-link" href="#main">{t(locale, 'skip')}</a>

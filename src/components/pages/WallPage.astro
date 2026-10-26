@@ -1,10 +1,10 @@
 ---
 import { Image } from 'astro:assets';
 import { localizePath } from '../../i18n/paths';
-import { t, type Locale } from '../../i18n/ui';
+import { t, type Locale, type UiKey } from '../../i18n/ui';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getWorks } from '../../lib/content';
-import { fitWidthPercent, HOME_CATEGORY, wallPath } from '../../lib/wall';
+import { fitWidthPercent, wallPath } from '../../lib/wall';
 import type { Category } from '../../lib/works';
 
 interface Props {
@@ -14,8 +14,8 @@ interface Props {
 
 const { locale, category } = Astro.props;
 const works = (await getWorks()).filter((w) => w.category === category);
-const name = t(locale, `category.${category}`);
-const title = category === HOME_CATEGORY ? t(locale, 'meta.home.title') : `${name} — Yunya Hsu`;
+// The first category's wall is the home page, so it keeps the home title (SPEC 7).
+const titles: Record<Category, UiKey> = { prints: 'meta.home.title', postcards: 'meta.postcards.title' };
 // One desktop row. On phones the next two are close enough that the browser's
 // lazy-load margin fetches them right away anyway.
 const EAGER_COUNT = 3;
@@ -28,9 +28,9 @@ const sizes = [
 ].join(', ');
 ---
 
-<BaseLayout locale={locale} title={title} description={t(locale, 'meta.description')} path={wallPath(category)}>
+<BaseLayout locale={locale} title={t(locale, titles[category])} description={t(locale, 'meta.description')} path={wallPath(category)}>
   {/* Only for screen readers and search engines: the Work menu already marks the category (SPEC 5.2). */}
-  <h1 class="sr-only">{name}</h1>
+  <h1 class="sr-only">{t(locale, `category.${category}`)}</h1>
   <ul class="wall">
     {
       works.map((work, i) => (

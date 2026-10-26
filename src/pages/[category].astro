@@ -1,0 +1,16 @@
+---
+import type { GetStaticPaths } from 'astro';
+import WallPage from '../components/pages/WallPage.astro';
+import { HOME_CATEGORY } from '../lib/wall';
+import { categories } from '../lib/works';
+
+// Every category but the home page's gets its own wall at /<category>/ (SPEC 5.2).
+export const getStaticPaths = (() => {
+  const walls = categories.filter((category) => category !== HOME_CATEGORY);
+  return walls.map((category) => ({ params: { category }, props: { category } }));
+}) satisfies GetStaticPaths;
+
+const { category } = Astro.props;
+---
+
+<WallPage locale="en" category={category} />

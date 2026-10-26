@@ -21,6 +21,7 @@ const en = {
   'work.back': 'Back to work',
   'about.title': 'About',
   'meta.home.title': 'Yunya Hsu — Illustration',
+  'meta.postcards.title': 'Postcards — Yunya Hsu',
   'meta.about.title': 'About — Yunya Hsu',
   'meta.description':
     'Illustrator based in Taiwan. Loose ink lines and textured color — travel, cafés, musicians and flowers.',
@@ -40,6 +41,7 @@ const zh: Record<UiKey, string> = {
   'work.back': '回到作品牆',
   'about.title': '關於',
   'meta.home.title': 'Yunya Hsu — 插畫',
+  'meta.postcards.title': '明信片 — Yunya Hsu',
   'meta.about.title': '關於 — Yunya Hsu',
   'meta.description': '住在台灣的插畫家。鬆鬆的墨線與層疊的色彩質地，畫旅行、咖啡館、樂手與花。',
 };
