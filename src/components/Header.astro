@@ -1,5 +1,6 @@
 ---
-import logo from '../assets/brand/logo.svg?raw';
+// A separate file (not inlined) so browsers download and cache it once for every page.
+import logoUrl from '../assets/brand/logo.svg?url';
 import { localizePath } from '../i18n/paths';
 import { htmlLang, locales, t, type Locale } from '../i18n/ui';
 
@@ -24,7 +25,9 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 ---
 
 <header class="site-header">
-  <a class="logo" href={home} aria-label="Yours, Yunya" set:html={logo} />
+  <a class="logo" href={home}>
+    <img src={logoUrl} alt="Yours, Yunya" width="163" height="105" />
+  </a>
   <nav aria-label={t(locale, 'nav.label')}>
     <ul>
       <li><a href={home} aria-current={onWork ? 'page' : undefined}>{t(locale, 'nav.work')}</a></li>
@@ -66,14 +69,14 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     display: block;
   }
 
-  .logo :global(svg) {
+  .logo img {
     display: block;
     height: 104px;
     width: auto;
   }
 
   @media (min-width: 600px) {
-    .logo :global(svg) {
+    .logo img {
       height: 140px;
     }
   }
@@ -84,7 +87,7 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     justify-content: center;
     align-items: center;
     gap: 12px 36px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.28em;
     text-transform: uppercase;

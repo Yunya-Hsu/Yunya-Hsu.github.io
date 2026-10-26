@@ -58,7 +58,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 17px;
+  font-size: 1.0625rem; /* 17px at the default 16px; rem so it follows the browser's font-size setting */
   line-height: 1.65;
 }
 

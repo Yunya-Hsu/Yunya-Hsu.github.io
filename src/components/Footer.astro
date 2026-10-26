@@ -39,7 +39,7 @@ const social = [
     padding: 32px var(--gutter);
     background: var(--color-footer-bg);
     color: var(--color-footer-text);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-style: italic;
   }
 
@@ -55,16 +55,17 @@ const social = [
     list-style: none;
   }
 
-  /* 16px glyph inside a 32px target. */
+  /* 16px glyph inside a 32px target. Icon-only links have no text to underline, so they fade on hover. */
   a {
     display: grid;
     place-items: center;
     width: 32px;
     height: 32px;
+    transition: opacity 0.2s;
   }
 
   a:hover {
-    color: var(--color-text);
+    opacity: 0.55;
   }
 
   a :global(svg) {
