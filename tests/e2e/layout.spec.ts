@@ -6,7 +6,7 @@ const SITE = 'https://yunya-hsu.github.io';
 test.describe('header', () => {
   test('logo and Work link go to the home of the current language', async ({ page }) => {
     await page.goto('/zh/about/');
-    await expect(page.getByRole('link', { name: 'Yunya', exact: true })).toHaveAttribute('href', '/zh/');
+    await expect(page.getByRole('link', { name: 'Yours, Yunya', exact: true })).toHaveAttribute('href', '/zh/');
     await expect(page.getByRole('link', { name: '作品' })).toHaveAttribute('href', '/zh/');
   });
 
@@ -31,18 +31,22 @@ test.describe('header', () => {
   }
 });
 
-test('footer links to Instagram and Threads', async ({ page }) => {
-  await page.goto('/');
+test('footer has the copyright and Instagram / Threads icon links', async ({ page }) => {
+  await page.goto('/zh/');
   const footer = page.getByRole('contentinfo');
   await expect(footer).toContainText(`© ${new Date().getFullYear()} Yunya Hsu`);
-  await expect(footer.getByRole('link', { name: 'Instagram' })).toHaveAttribute(
-    'href',
-    'https://www.instagram.com/yours_yunya/',
-  );
-  await expect(footer.getByRole('link', { name: 'Threads' })).toHaveAttribute(
-    'href',
-    'https://www.threads.com/@yours_yunya',
-  );
+  const ig = footer.getByRole('link', { name: 'Instagram', exact: true });
+  const threads = footer.getByRole('link', { name: 'Threads', exact: true });
+  await expect(ig).toHaveAttribute('href', 'https://www.instagram.com/yours_yunya/');
+  await expect(threads).toHaveAttribute('href', 'https://www.threads.com/@yours_yunya');
+  for (const link of [ig, threads]) {
+    await expect(link).toHaveText('');
+    await expect(link.locator('svg')).toHaveAttribute('aria-hidden', 'true');
+    const box = await link.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(24);
+    expect(box!.height).toBeGreaterThanOrEqual(24);
+  }
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Instagram' })).toHaveCount(0);
 });
 
 for (const path of allPages) {

@@ -1,4 +1,6 @@
 ---
+// A separate file (not inlined) so browsers download and cache it once for every page.
+import logoUrl from '../assets/brand/logo.svg?url';
 import { localizePath } from '../i18n/paths';
 import { htmlLang, locales, t, type Locale } from '../i18n/ui';
 
@@ -11,7 +13,7 @@ interface Props {
 const { locale, path } = Astro.props;
 const home = localizePath(locale, '/');
 const about = localizePath(locale, '/about/');
-// "Work" is current on the wall and on single work pages.
+// "Work" is current on the wall and on single work pages; nothing is current on the 404 (SPEC 5.1).
 const onWork = path !== undefined && (path === '/' || path.startsWith('/works/'));
 const onAbout = path === '/about/';
 
@@ -23,7 +25,9 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 ---
 
 <header class="site-header">
-  <a class="logo" href={home}>Yunya</a>
+  <a class="logo" href={home}>
+    <img src={logoUrl} alt="Yours, Yunya" width="163" height="105" />
+  </a>
   <nav aria-label={t(locale, 'nav.label')}>
     <ul>
       <li><a href={home} aria-current={onWork ? 'page' : undefined}>{t(locale, 'nav.work')}</a></li>
@@ -52,53 +56,85 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 </header>
 
 <style>
+  /* SPEC 2.3–2.4, 5.1: logo centred as one block, nav centred beneath it. */
   .site-header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    width: 100%;
-    max-width: var(--max-width);
-    margin-inline: auto;
-    padding: 1.5rem var(--gutter);
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 48px var(--gutter);
   }
 
   .logo {
-    font-family: var(--font-logo);
-    font-size: 1.25rem;
-    letter-spacing: 0.02em;
+    display: block;
+  }
+
+  .logo img {
+    display: block;
+    height: 104px;
+    width: auto;
+  }
+
+  @media (min-width: 600px) {
+    .logo img {
+      height: 140px;
+    }
   }
 
   nav {
     display: flex;
-    align-items: baseline;
-    gap: 1.5rem;
-    font-size: var(--text-small);
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px 36px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  :global(:lang(zh-Hant)) nav {
+    letter-spacing: 0.2em;
   }
 
   ul {
     display: flex;
-    gap: 1rem;
+    gap: 36px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  /* Equal space above and below so text and icons share a centre line; the underline sits 6px below the text. */
   nav a {
+    display: inline-block;
+    padding-block: 6px;
+    border-bottom: 1px solid transparent;
     color: var(--color-muted);
   }
 
-  nav a[aria-current] {
+  nav a:hover {
+    text-decoration: none;
     color: var(--color-text);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--color-text);
+    border-color: var(--color-text);
   }
 
   .lang {
     gap: 0;
+    letter-spacing: 0.1em;
+  }
+
+  .lang a[aria-current] {
+    color: var(--color-text);
   }
 
   .lang li + li::before {
     content: '/';
-    padding-inline: 0.4em;
+    padding-inline: 0.5em;
     color: var(--color-muted);
   }
 </style>
