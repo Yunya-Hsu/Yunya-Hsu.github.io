@@ -3,6 +3,8 @@
 import logoUrl from '../assets/brand/logo.svg?url';
 import { localizePath } from '../i18n/paths';
 import { htmlLang, locales, t, type Locale } from '../i18n/ui';
+import { wallCategory, wallPath } from '../lib/wall';
+import { categories } from '../lib/works';
 
 interface Props {
   locale: Locale;
@@ -13,8 +15,9 @@ interface Props {
 const { locale, path } = Astro.props;
 const home = localizePath(locale, '/');
 const about = localizePath(locale, '/about/');
-// "Work" is current on the wall and on single work pages; nothing is current on the 404 (SPEC 5.1).
-const onWork = path !== undefined && (path === '/' || path.startsWith('/works/'));
+const currentCategory = path === undefined ? undefined : wallCategory(path);
+// "Work" is current on every wall and on single work pages; nothing is current on the 404 (SPEC 5.1).
+const onWork = currentCategory !== undefined || (path?.startsWith('/works/') ?? false);
 const onAbout = path === '/about/';
 
 // Short visible label; the accessible name is the full language name and must contain the visible text (WCAG 2.5.3).
@@ -25,17 +28,10 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 ---
 
 <header class="site-header">
-  <a class="logo" href={home}>
-    <img src={logoUrl} alt="Yours, Yunya" width="163" height="105" />
-  </a>
-  <nav aria-label={t(locale, 'nav.label')}>
-    <ul>
-      <li><a href={home} aria-current={onWork ? 'page' : undefined}>{t(locale, 'nav.work')}</a></li>
-      <li><a href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a></li>
-    </ul>
-    {
-      path !== undefined && (
-        <ul class="lang" aria-label={t(locale, 'lang.label')}>
+  {
+    path !== undefined && (
+      <nav class="lang" aria-label={t(locale, 'lang.label')}>
+        <ul>
           {locales.map((l) => (
             <li>
               <a
@@ -50,14 +46,79 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
             </li>
           ))}
         </ul>
-      )
-    }
+      </nav>
+    )
+  }
+  <a class="logo" href={home}>
+    <img src={logoUrl} alt="Yours, Yunya" width="163" height="105" />
+  </a>
+  <nav class="main" aria-label={t(locale, 'nav.label')}>
+    <ul>
+      {/* Not a link: Work always asks which category to open (SPEC 5.1). */}
+      <li class="work-menu">
+        <button
+          type="button"
+          class="nav-item"
+          aria-expanded="false"
+          aria-controls="work-menu"
+          aria-current={onWork ? 'true' : undefined}
+        >
+          {t(locale, 'nav.work')}
+        </button>
+        <div class="menu" id="work-menu">
+          <ul>
+            {categories.map((category) => (
+              <li>
+                <a
+                  href={localizePath(locale, wallPath(category))}
+                  aria-current={category === currentCategory ? 'page' : undefined}
+                >
+                  <span>{t(locale, `category.${category}`)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </li>
+      <li>
+        <a class="nav-item" href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a>
+      </li>
+    </ul>
   </nav>
 </header>
 
+<script>
+  const item = document.querySelector<HTMLElement>('.work-menu')!;
+  const button = item.querySelector('button')!;
+
+  function setOpen(open: boolean) {
+    button.setAttribute('aria-expanded', String(open));
+  }
+
+  button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+
+  // Escape closes the menu even while the pointer still hovers it, until the pointer leaves.
+  item.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    setOpen(false);
+    item.dataset.dismissed = '';
+    button.focus();
+  });
+  item.addEventListener('pointerleave', () => delete item.dataset.dismissed);
+
+  // Close when focus or a tap moves anywhere outside the menu.
+  item.addEventListener('focusout', (event) => {
+    if (!item.contains(event.relatedTarget as Node | null)) setOpen(false);
+  });
+  document.addEventListener('click', (event) => {
+    if (!item.contains(event.target as Node)) setOpen(false);
+  });
+</script>
+
 <style>
-  /* SPEC 2.3–2.4, 5.1: logo centred as one block, nav centred beneath it. */
+  /* SPEC 2.3–2.4, 5.1: logo centred as one block, nav centred beneath it, language switch in the top-right corner. */
   .site-header {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -82,18 +143,13 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
   }
 
   nav {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 12px 36px;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.28em;
     text-transform: uppercase;
   }
 
-  :global(:lang(zh-Hant)) nav {
+  :global(:lang(zh-Hant)) nav.main {
     letter-spacing: 0.2em;
   }
 
@@ -105,36 +161,138 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     list-style: none;
   }
 
-  /* Equal space above and below so text and icons share a centre line; the underline sits 6px below the text. */
-  nav a {
+  /* SPEC 2.5: selected = underline in the text colour; hover = white text on a dark patch, never an underline.
+     Equal space above and below so text and icons share a centre line; the underline sits 6px below the text. */
+  nav a,
+  .nav-item {
     display: inline-block;
     padding-block: 6px;
+    border: 0;
     border-bottom: 1px solid transparent;
+    background: none;
     color: var(--color-muted);
-  }
-
-  nav a:hover {
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    /* Never the site-wide hover underline: in the header an underline only means "selected" (SPEC 2.5). */
     text-decoration: none;
-    color: var(--color-text);
+    cursor: pointer;
+    border-radius: 2px;
+    transition:
+      color 0.15s,
+      background-color 0.15s,
+      box-shadow 0.15s;
   }
 
-  nav a[aria-current='page'] {
+  /* The side shadows widen the patch 6px past the text without moving anything; it stays inside the item's own
+     height, so it never covers a neighbour's underline. The selected item is where you already are, so it stays still
+     (Work's hover already opens its menu). */
+  nav a:not([aria-current]):hover,
+  .nav-item:not([aria-current]):hover {
+    color: #fff;
+    background-color: var(--color-footer-text);
+    box-shadow:
+      -6px 0 0 var(--color-footer-text),
+      6px 0 0 var(--color-footer-text);
+  }
+
+  nav a[aria-current],
+  .nav-item[aria-current] {
     color: var(--color-text);
     border-color: var(--color-text);
   }
 
-  .lang {
+  /* The category menu hangs under Work, over the page, without moving anything (SPEC 5.1). */
+  .work-menu {
+    position: relative;
+  }
+
+  .menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    z-index: 10;
+    translate: -50% 0;
+    /* Transparent bridge from Work to the panel, so the pointer never leaves the hover area on the way down. */
+    padding-top: 10px;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+  }
+
+  .nav-item[aria-expanded='true'] + .menu {
+    display: block;
+  }
+
+  @media (hover: hover) {
+    .work-menu:hover:not([data-dismissed]) .menu {
+      display: block;
+    }
+  }
+
+  /* Rows run edge to edge, so every hover patch is the full width of the menu. */
+  .menu ul {
+    flex-direction: column;
     gap: 0;
+    padding-block: 8px;
+    background: var(--color-bg);
+    box-shadow: var(--shadow-print);
+    white-space: nowrap;
+  }
+
+  .menu a {
+    display: block;
+    padding: 6px 28px 4px;
+    border-bottom: 0;
+    text-align: center;
+    font-size: 0.9375rem;
+    font-style: italic;
+  }
+
+  .menu a:not([aria-current]):hover {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  /* The selected underline stays the width of the text, 6px below it. */
+  .menu a span {
+    display: inline-block;
+    padding-bottom: 6px;
+    border-bottom: 1px solid transparent;
+  }
+
+  .menu a[aria-current] span {
+    border-color: var(--color-text);
+    transition: border-color 0.15s;
+  }
+
+  /* One highlight at a time: while another category is hovered, the selected underline steps aside. */
+  .menu ul:has(a:not([aria-current]):hover) a[aria-current] span {
+    border-color: transparent;
+  }
+
+  :global(:lang(zh-Hant)) .menu a {
+    font-style: normal;
     letter-spacing: 0.1em;
   }
 
-  .lang a[aria-current] {
-    color: var(--color-text);
+  /* Top edge level with the header's 48px padding; it scrolls away with the page. */
+  .lang {
+    position: absolute;
+    top: 48px;
+    right: var(--gutter);
+    letter-spacing: 0.1em;
   }
 
+  .lang ul {
+    gap: 0;
+  }
+
+  /* Wide enough that the 6px hover patch never touches the slash. */
   .lang li + li::before {
     content: '/';
-    padding-inline: 0.5em;
+    padding-inline: 1.25em;
     color: var(--color-muted);
   }
 </style>

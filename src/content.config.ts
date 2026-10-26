@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { categories } from './lib/works';
 
 const localized = z.strictObject({
   en: z.string().trim().min(1),
@@ -14,7 +15,7 @@ const works = defineCollection({
   schema: z.strictObject({
     title: localized,
     year: z.int().min(1900).max(2100),
-    category: z.enum(['places', 'people', 'flowers']),
+    category: z.enum(categories),
     medium: localized,
     edition: localized.optional(),
     alt: localized,
