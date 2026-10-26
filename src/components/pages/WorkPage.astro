@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import { localizePath } from '../../i18n/paths';
 import { t, type Locale } from '../../i18n/ui';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { wallPath } from '../../lib/wall';
 import type { Work } from '../../lib/works';
 
 interface Props {
@@ -32,7 +33,7 @@ const description = locale === 'zh' ? `${title}，${work.year}。${medium}。` :
       <p>{medium}</p>
       {work.edition && <p>{work.edition[locale]}</p>}
     </div>
-    <p class="back"><a href={localizePath(locale, '/')}>{t(locale, 'work.back')}</a></p>
+    <p class="back"><a href={localizePath(locale, wallPath(work.category))}>{t(locale, 'work.back')}</a></p>
   </article>
 </BaseLayout>
 

@@ -24,11 +24,6 @@ const avatar = getAvatar();
     }
     <h1 class="sr-only">{t(locale, 'about.title')}</h1>
     {bio[locale].map((paragraph) => <p>{paragraph}</p>)}
-    <h2>{t(locale, 'about.contact')}</h2>
-    <ul>
-      <li><a href="https://www.instagram.com/yours_yunya/" rel="me">Instagram</a></li>
-      <li><a href="https://www.threads.com/@yours_yunya" rel="me">Threads</a></li>
-    </ul>
   </article>
 </BaseLayout>
 
@@ -51,20 +46,5 @@ const avatar = getAvatar();
 
   .placeholder {
     background: var(--color-placeholder);
-  }
-
-  h2 {
-    margin: 2rem 0 0.5rem;
-    font-size: var(--text-small);
-    font-weight: 500;
-    color: var(--color-muted);
-  }
-
-  ul {
-    display: flex;
-    gap: 1rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
   }
 </style>

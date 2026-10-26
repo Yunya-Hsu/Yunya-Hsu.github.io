@@ -1,34 +1,54 @@
 ---
 import { Image } from 'astro:assets';
 import { localizePath } from '../../i18n/paths';
-import { t, type Locale } from '../../i18n/ui';
+import { t, type Locale, type UiKey } from '../../i18n/ui';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getWorks } from '../../lib/content';
+import { fitWidthPercent, wallPath } from '../../lib/wall';
+import type { Category } from '../../lib/works';
 
 interface Props {
   locale: Locale;
+  category: Category;
 }
 
-const { locale } = Astro.props;
-const works = await getWorks();
-// Roughly the first screen on desktop; everything after it lazy-loads.
-const EAGER_COUNT = 4;
+const { locale, category } = Astro.props;
+const works = (await getWorks()).filter((w) => w.category === category);
+// The first category's wall is the home page, so it keeps the home title (SPEC 7).
+const titles: Record<Category, UiKey> = { prints: 'meta.home.title', postcards: 'meta.postcards.title' };
+// One desktop row. On phones the next two are close enough that the browser's
+// lazy-load margin fetches them right away anyway.
+const EAGER_COUNT = 3;
+// Width of one cell: content is min(100vw, 1440px) minus gutters (4vw, or 16px on small phones) and column gaps.
+const sizes = [
+  '(min-width: 1440px) 410px',
+  '(min-width: 1024px) calc(30.6vw - 32px)',
+  '(min-width: 600px) calc(46vw - 16px)',
+  'calc(100vw - 32px)',
+].join(', ');
 ---
 
-<BaseLayout locale={locale} title={t(locale, 'meta.home.title')} description={t(locale, 'meta.description')} path="/">
-  <h1 class="sr-only">{t(locale, 'nav.work')}</h1>
+<BaseLayout locale={locale} title={t(locale, titles[category])} description={t(locale, 'meta.description')} path={wallPath(category)}>
+  {/* Only for screen readers and search engines: the Work menu already marks the category (SPEC 5.2). */}
+  <h1 class="sr-only">{t(locale, `category.${category}`)}</h1>
   <ul class="wall">
     {
       works.map((work, i) => (
         <li>
-          <a href={localizePath(locale, `/works/${work.slug}/`)}>
-            <Image
-              src={work.image}
-              alt={work.alt[locale]}
-              widths={[400, 800, 1200]}
-              sizes="(min-width: 1024px) 25vw, (min-width: 600px) 50vw, 100vw"
-              loading={i < EAGER_COUNT ? 'eager' : 'lazy'}
-            />
+          <a class="work" href={localizePath(locale, `/works/${work.slug}/`)}>
+            <span class="cell">
+              <Image
+                src={work.image}
+                alt={work.alt[locale]}
+                widths={[400, 800, 1200]}
+                sizes={sizes}
+                loading={i < EAGER_COUNT ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
+                style={`width: ${fitWidthPercent(work.image.width, work.image.height)}%`}
+              />
+            </span>
+            <span class="title">{work.title[locale]}</span>
+            <span class="year">{work.year}</span>
           </a>
         </li>
       ))
@@ -37,13 +57,67 @@ const EAGER_COUNT = 4;
 </BaseLayout>
 
 <style>
-  /* Stage 2 skeleton grid; replaced by the 4:5 gallery grid (SPEC 5.2) in stage 4. */
+  /* SPEC 5.2: fixed 4:5 cells, 1 / 2 / 3 columns. */
   .wall {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 48px;
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .wall {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 56px 32px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .wall {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 72px 48px;
+    }
+  }
+
+  .work {
+    display: block;
+    text-align: center;
+  }
+
+  .work:hover {
+    text-decoration: none;
+  }
+
+  .work:hover .title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Works are scaled to fit, never cropped, and hang on the cell's centre line. */
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    margin-bottom: 20px;
+  }
+
+  .cell img {
+    box-shadow: var(--shadow-print);
+  }
+
+  .title {
+    display: block;
+    font-size: 0.9375rem;
+    letter-spacing: 0.12em;
+  }
+
+  .year {
+    display: block;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-style: italic;
   }
 </style>

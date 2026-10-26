@@ -7,7 +7,7 @@ const image = (src: string) => ({ src, width: 100, height: 100, format: 'jpg' })
 const data = (order: number): WorkData => ({
   title: { en: 'T', zh: 'T' },
   year: 2025,
-  category: 'places',
+  category: 'prints',
   medium: { en: 'Digital illustration', zh: '數位插畫' },
   alt: { en: 'A', zh: 'A' },
   order,

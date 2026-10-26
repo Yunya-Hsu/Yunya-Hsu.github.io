@@ -1,6 +1,7 @@
 import type { ImageMetadata } from 'astro';
 
-export const categories = ['places', 'people', 'flowers'] as const;
+/** What a work is made into (SPEC 5.2). The first one is what the wall shows by default. */
+export const categories = ['prints', 'postcards'] as const;
 export type Category = (typeof categories)[number];
 
 type Localized = { en: string; zh: string };
