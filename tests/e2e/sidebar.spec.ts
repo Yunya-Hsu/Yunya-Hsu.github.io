@@ -66,6 +66,18 @@ test('stays on screen while the wall scrolls', async ({ page }) => {
   expect((await page.getByRole('banner').getByRole('link', { name: 'Instagram' }).boundingBox())!.y).toBeCloseTo(800 - 48 - 32, 0);
 });
 
+// A trackpad bounce past the top or bottom of the page can't be simulated here. A sticky bar is held inside the
+// header column and jitters with the bounce; a fixed one is pinned to the screen and doesn't.
+test('is pinned to the screen, not held inside the header column', async ({ page }) => {
+  await page.goto('/');
+  const bar = page.getByRole('banner').locator('.bar');
+  await expect(bar).toHaveCSS('position', 'fixed');
+  // Still the full sidebar: 260px wide, the full height of the screen, dark.
+  const box = (await bar.boundingBox())!;
+  expect(box).toMatchObject({ x: 0, y: 0, width: 260, height: 800 });
+  await expect(bar).toHaveCSS('background-color', 'rgb(69, 64, 58)');
+});
+
 test('under 1024px the centred top header comes back', async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 800 });
   await page.goto('/');

@@ -380,10 +380,16 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
       padding: 0;
     }
 
+    /* Fixed, not sticky: when a trackpad bounces the page past its top or bottom, a sticky bar is held inside the
+       header column, follows the bounce and snaps back. The header column still keeps the sidebar's place in the
+       grid; the bar carries its own background so the column moving underneath never shows. */
     .bar {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      width: var(--sidebar);
       height: 100svh;
+      background: var(--color-chrome-bg);
       display: flex;
       flex-direction: column;
       align-items: flex-start;
