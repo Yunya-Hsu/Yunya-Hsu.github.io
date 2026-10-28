@@ -65,11 +65,23 @@ test.describe('dark frame (SPEC 2.1)', () => {
     await expect(about).toHaveCSS('color', 'rgb(47, 44, 39)');
   });
 
-  test('the Work menu keeps the wall’s colours, since it hangs over the page', async ({ page, isMobile }) => {
+  test('the Work menu is dark beside the sidebar, and keeps the wall’s colours under the top header', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(isMobile, 'hover');
-    await page.goto('/about/');
-    await page.locator('summary', { hasText: 'Work' }).hover();
+    const panel = page.locator('#work-menu ul');
     const prints = page.locator('#work-menu').getByRole('link', { name: 'Limited Edition Prints' });
+    await page.goto('/about/');
+    // From 1024px it grows out of the sidebar, so it is never half on the frame and half on the wall.
+    await page.locator('summary', { hasText: 'Work' }).hover();
+    await expect(panel).toHaveCSS('background-color', FRAME);
+    await expect(prints).toHaveCSS('color', 'rgb(203, 196, 184)');
+    // Under the top header it hangs over the page.
+    await page.mouse.move(5, 5);
+    await page.setViewportSize({ width: 1000, height: 800 });
+    await page.locator('summary', { hasText: 'Work' }).hover();
+    await expect(panel).toHaveCSS('background-color', 'rgb(238, 234, 226)');
     await expect(prints).toHaveCSS('color', 'rgb(98, 93, 82)');
   });
 

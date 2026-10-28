@@ -380,10 +380,16 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
       padding: 0;
     }
 
+    /* Fixed, not sticky: when a trackpad bounces the page past its top or bottom, a sticky bar is held inside the
+       header column, follows the bounce and snaps back. The header column still keeps the sidebar's place in the
+       grid; the bar carries its own background so the column moving underneath never shows. */
     .bar {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      width: var(--sidebar);
       height: 100svh;
+      background: var(--color-chrome-bg);
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -409,6 +415,24 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
       translate: none;
       padding-top: 0;
       padding-left: 16px;
+    }
+
+    /* Dark like the sidebar it grows out of, so it never sits half on the frame and half on the wall. */
+    .menu {
+      --nav-fg: var(--color-chrome-muted);
+      --nav-current: var(--color-chrome-text);
+      --nav-hover-bg: var(--color-chrome-hover-bg);
+      --nav-hover-fg: var(--color-chrome-hover-text);
+    }
+
+    /* A dark shadow on every side, a little lower, lifts it off the wall like a card. */
+    .menu ul {
+      background: var(--color-chrome-bg);
+      box-shadow: 0 4px 24px rgba(40, 32, 20, 0.4);
+    }
+
+    .menu :focus-visible {
+      outline-color: var(--color-chrome-text);
     }
 
     .menu a {
