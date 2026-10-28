@@ -1,9 +1,10 @@
 ---
 // A separate file (not inlined) so browsers download and cache it once for every page.
-import logoUrl from '../assets/brand/logo.svg?url';
+import logoUrl from '../assets/brand/logo-light.svg?url';
 import { localizePath } from '../i18n/paths';
-import { htmlLang, locales, t, type Locale } from '../i18n/ui';
+import { htmlLang, publishedLocales, t, type Locale } from '../i18n/ui';
 import { wallCategory, wallPath } from '../lib/wall';
+import SocialLinks from './SocialLinks.astro';
 import { categories } from '../lib/works';
 
 interface Props {
@@ -28,58 +29,62 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 ---
 
 <header class="site-header">
-  {
-    path !== undefined && (
-      <nav class="lang" aria-label={t(locale, 'lang.label')}>
-        <ul>
-          {locales.map((l) => (
-            <li>
-              <a
-                href={localizePath(l, path)}
-                lang={htmlLang[l]}
-                hreflang={htmlLang[l]}
-                aria-label={langLabels[l].name}
-                aria-current={l === locale ? 'true' : undefined}
-              >
-                {langLabels[l].short}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    )
-  }
-  <a class="logo" href={home}>
-    <img src={logoUrl} alt="Yours, Yunya" width="163" height="105" />
-  </a>
-  <nav class="main" aria-label={t(locale, 'nav.label')}>
-    <ul>
-      {/* Not a link: Work always asks which category to open (SPEC 5.1). A native disclosure, so a click or tap
-          opens it in every browser even without JS; the script adds hover. */}
-      <li>
-        <details class="work-menu">
-          <summary class="nav-item" aria-current={onWork ? 'true' : undefined}>{t(locale, 'nav.work')}</summary>
-          <div class="menu" id="work-menu">
-            <ul>
-              {categories.map((category) => (
-                <li>
-                  <a
-                    href={localizePath(locale, wallPath(category))}
-                    aria-current={category === currentCategory ? 'page' : undefined}
-                  >
-                    <span>{t(locale, `category.${category}`)}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </details>
-      </li>
-      <li>
-        <a class="nav-item" href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a>
-      </li>
-    </ul>
-  </nav>
+  {/* The part that becomes the sidebar from 1024px; under that it adds no box of its own. */}
+  <div class="bar">
+    <a class="logo" href={home}>
+      <img src={logoUrl} alt="Yours, Yunya" width="129" height="124" />
+    </a>
+    <nav class="main" aria-label={t(locale, 'nav.label')}>
+      <ul>
+        {/* Not a link: Work always asks which category to open (SPEC 5.1). A native disclosure, so a click or tap
+            opens it in every browser even without JS; the script adds hover. */}
+        <li>
+          <details class="work-menu">
+            <summary class="nav-item" aria-current={onWork ? 'true' : undefined}>{t(locale, 'nav.work')}</summary>
+            <div class="menu" id="work-menu">
+              <ul>
+                {categories.map((category) => (
+                  <li>
+                    <a
+                      href={localizePath(locale, wallPath(category))}
+                      aria-current={category === currentCategory ? 'page' : undefined}
+                    >
+                      <span>{t(locale, `category.${category}`)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </li>
+        <li>
+          <a class="nav-item" href={about} aria-current={onAbout ? 'page' : undefined}>{t(locale, 'nav.about')}</a>
+        </li>
+      </ul>
+    </nav>
+    {
+      path !== undefined && publishedLocales.length > 1 && (
+        <nav class="lang" aria-label={t(locale, 'lang.label')}>
+          <ul>
+            {publishedLocales.map((l) => (
+              <li>
+                <a
+                  href={localizePath(l, path)}
+                  lang={htmlLang[l]}
+                  hreflang={htmlLang[l]}
+                  aria-label={langLabels[l].name}
+                  aria-current={l === locale ? 'true' : undefined}
+                >
+                  {langLabels[l].short}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+    <SocialLinks class="sidebar-social" />
+  </div>
 </header>
 
 <script>
@@ -107,9 +112,12 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     summary.focus();
   });
 
-  // Close when focus or a tap moves anywhere outside the menu.
+  // Close when focus or a tap moves anywhere outside the menu. Safari focuses Work on a tap but not the category
+  // tapped next, so focus moves to nothing (relatedTarget null); closing then would swallow the tap. Taps outside
+  // are left to the click handler below.
   menu.addEventListener('focusout', (event) => {
-    if (!menu.contains(event.relatedTarget as Node | null)) menu.open = false;
+    const next = event.relatedTarget as Node | null;
+    if (next && !menu.contains(next)) menu.open = false;
   });
   document.addEventListener('click', (event) => {
     if (!menu.contains(event.target as Node)) menu.open = false;
@@ -117,14 +125,26 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 </script>
 
 <style>
-  /* SPEC 2.3–2.4, 5.1: logo centred as one block, nav centred beneath it, language switch in the top-right corner. */
+  /* SPEC 2.3–2.4, 5.1, under 1024px: logo centred as one block, nav centred beneath it, language switch in the
+     top-right corner. The sidebar layout follows at the end. */
+  /* The dark frame (SPEC 2.1). Nav items read their colours from the --nav-* tokens: light on the frame, reset to
+     the wall's in the Work menu, which hangs over the page. */
   .site-header {
+    --nav-fg: var(--color-chrome-muted);
+    --nav-current: var(--color-chrome-text);
+    --nav-hover-bg: var(--color-chrome-hover-bg);
+    --nav-hover-fg: var(--color-chrome-hover-text);
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 18px;
     padding: 48px var(--gutter);
+    background: var(--color-chrome-bg);
+  }
+
+  .site-header :focus-visible {
+    outline-color: var(--color-chrome-text);
   }
 
   .logo {
@@ -133,25 +153,28 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
 
   .logo img {
     display: block;
-    height: 104px;
+    height: 111px;
     width: auto;
   }
 
   @media (min-width: 600px) {
     .logo img {
-      height: 140px;
+      height: 149px;
     }
   }
 
+  /* --ls repeats the letter-spacing: browsers add it after the last letter too, and the underline and hover patch
+     leave that trailing space out so they line up with the text itself. */
   nav {
+    --ls: 0.28em;
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.28em;
+    letter-spacing: var(--ls);
     text-transform: uppercase;
   }
 
   :global(:lang(zh-Hant)) nav.main {
-    letter-spacing: 0.2em;
+    --ls: 0.2em;
   }
 
   ul {
@@ -163,15 +186,15 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
   }
 
   /* SPEC 2.5: selected = underline in the text colour; hover = white text on a dark patch, never an underline.
-     Equal space above and below so text and icons share a centre line; the underline sits 6px below the text. */
+     6px above the text, and 6px plus the 1px underline below it, which sits 6px under the text. */
   nav a,
   .nav-item {
+    position: relative;
     display: inline-block;
-    padding-block: 6px;
+    padding-block: 6px 7px;
     border: 0;
-    border-bottom: 1px solid transparent;
     background: none;
-    color: var(--color-muted);
+    color: var(--nav-fg);
     font: inherit;
     letter-spacing: inherit;
     text-transform: inherit;
@@ -185,22 +208,37 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
       box-shadow 0.15s;
   }
 
+  /* A line of its own rather than a border, so it can stop at the last letter and stays square at the ends. */
+  nav a::after,
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: var(--ls);
+    bottom: 0;
+    height: 1px;
+  }
+
   /* The side shadows widen the patch 6px past the text without moving anything; it stays inside the item's own
      height, so it never covers a neighbour's underline. The selected item is where you already are, so it stays still
      (Work's hover already opens its menu). */
   nav a:not([aria-current]):hover,
   .nav-item:not([aria-current]):hover {
-    color: var(--color-hover-text);
-    background-color: var(--color-hover-bg);
+    color: var(--nav-hover-fg);
+    background-color: var(--nav-hover-bg);
     box-shadow:
-      -6px 0 0 var(--color-hover-bg),
-      6px 0 0 var(--color-hover-bg);
+      -6px 0 0 var(--nav-hover-bg),
+      calc(6px - var(--ls)) 0 0 var(--nav-hover-bg);
   }
 
   nav a[aria-current],
   .nav-item[aria-current] {
-    color: var(--color-text);
-    border-color: var(--color-text);
+    color: var(--nav-current);
+  }
+
+  nav a[aria-current]::after,
+  .nav-item[aria-current]::after {
+    background: var(--nav-current);
   }
 
   /* The category menu hangs under Work, over the page, without moving anything (SPEC 5.1). */
@@ -226,8 +264,13 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     translate: -50% 0;
     /* Transparent bridge from Work to the panel, so the pointer never leaves the hover area on the way down. */
     padding-top: 10px;
+    --ls: 0px;
+    --nav-fg: var(--color-muted);
+    --nav-current: var(--color-text);
+    --nav-hover-bg: var(--color-hover-bg);
+    --nav-hover-fg: var(--color-hover-text);
+    letter-spacing: var(--ls);
     text-transform: none;
-    letter-spacing: normal;
     font-weight: 400;
   }
 
@@ -244,10 +287,14 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
   .menu a {
     display: block;
     padding: 6px 28px 4px;
-    border-bottom: 0;
     text-align: center;
     font-size: 0.9375rem;
     font-style: italic;
+  }
+
+  /* The panel is on the wall, so focus shows dark again. */
+  .menu :focus-visible {
+    outline-color: var(--color-text);
   }
 
   .menu a:not([aria-current]):hover {
@@ -255,34 +302,48 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
     border-radius: 0;
   }
 
-  /* The selected underline stays the width of the text, 6px below it. */
-  .menu a span {
-    display: inline-block;
-    padding-bottom: 6px;
-    border-bottom: 1px solid transparent;
+  /* Rows span the menu, so the selected underline belongs to the text inside: as wide as it, 6px below it. */
+  .menu a::after {
+    content: none;
   }
 
-  .menu a[aria-current] span {
-    border-color: var(--color-text);
-    transition: border-color 0.15s;
+  .menu a span {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 7px;
+  }
+
+  .menu a span::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: var(--ls);
+    bottom: 0;
+    height: 1px;
+    transition: background-color 0.15s;
+  }
+
+  .menu a[aria-current] span::after {
+    background: var(--nav-current);
   }
 
   /* One highlight at a time: while another category is hovered, the selected underline steps aside. */
-  .menu ul:has(a:not([aria-current]):hover) a[aria-current] span {
-    border-color: transparent;
+  .menu ul:has(a:not([aria-current]):hover) a[aria-current] span::after {
+    background: transparent;
   }
 
   :global(:lang(zh-Hant)) .menu a {
+    --ls: 0.1em;
+    letter-spacing: var(--ls);
     font-style: normal;
-    letter-spacing: 0.1em;
   }
 
-  /* Top edge level with the header's 48px padding; it scrolls away with the page. */
+  /* Top edge level with the header's top padding; it scrolls away with the page. */
   .lang {
     position: absolute;
     top: 48px;
     right: var(--gutter);
-    letter-spacing: 0.1em;
+    --ls: 0.1em;
   }
 
   .lang ul {
@@ -293,6 +354,78 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
   .lang li + li::before {
     content: '/';
     padding-inline: 1.25em;
-    color: var(--color-muted);
+    color: var(--nav-fg);
+  }
+
+  /* SPEC 5.1: from 1024px the header is a sidebar on the left that stays put while the page scrolls: logo, Work,
+     About, and the language switch at the bottom. Vertical room is what artwork pages lack on a laptop; width they
+     have to spare. The Work menu works as in the top header, but opens to the right of Work, so it never covers
+     About. */
+  .bar {
+    display: contents;
+  }
+
+  /* Smaller screens show the icons in the footer instead. */
+  .bar :global(.sidebar-social) {
+    display: none;
+  }
+
+  /* SPEC 5.1: from 1024px the header is a sidebar on the left that stays put while the page scrolls. Vertical room
+     is what artwork pages lack on a laptop; width they have to spare. The Work menu opens to the right of Work, so
+     it never covers About. */
+  @media (min-width: 1024px) {
+    .site-header {
+      position: static;
+      display: block;
+      padding: 0;
+    }
+
+    .bar {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 48px;
+      padding: 48px 0 48px var(--gutter);
+    }
+
+    /* Fits the 260px sidebar with the gutter on its left: 128px tall is about 133px wide. */
+    .logo img {
+      height: 128px;
+    }
+
+    nav.main > ul {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Beside Work, its first category level with it. The transparent bridge runs sideways here, so the pointer
+       never leaves the hover area on the way across. */
+    .menu {
+      top: -10px;
+      left: 100%;
+      translate: none;
+      padding-top: 0;
+      padding-left: 16px;
+    }
+
+    .menu a {
+      text-align: left;
+    }
+
+    .lang {
+      position: static;
+    }
+
+    /* At the bottom of the sidebar, centred across its full width. Part of the sticky bar, so it stays with the logo
+       and nav. */
+    .bar :global(.sidebar-social) {
+      display: flex;
+      justify-content: center;
+      width: var(--sidebar);
+      margin: auto 0 0 calc(-1 * var(--gutter));
+    }
   }
 </style>

@@ -49,4 +49,8 @@ Node 版本以 `.nvmrc` 為準（本機和 CI 共用，寫死到 patch 版，因
 
 - **Astro 7 偵測到 AI agent 執行時，會把 `astro dev` / `astro preview` 自動放到背景執行**，脫離原本的程序。所以：
   - Playwright 的 `webServer` 指令要加 `--ignore-lock`，讓伺服器留在前景，測試結束才會被關掉。
-  - 自己啟動過伺服器的話，用 `npx astro dev stop` / `npx astro preview stop` 關掉，不要留著佔用 port。
+  - 自己啟動的伺服器，用完就關掉，把 port 還回來：
+    - 沒加 `--ignore-lock`（被放到背景）的：用 `npx astro dev stop` / `npx astro preview stop`。
+    - 加了 `--ignore-lock` 的：`stop` 找不到它，改用 `pkill -f "astro preview --port <port>"`，再用 `lsof -nP -iTCP:<port> -sTCP:LISTEN` 確認 port 已經空出來。
+- **port 被佔用時，Astro 會自動改用下一個 port**，只在啟動訊息裡寫出實際網址。截圖或量測前，先從啟動訊息確認網址，才不會連到別的（舊的）伺服器。
+- 本機的 zsh 開了 `noclobber`：覆寫已經存在的檔案（例如重新寫入 log）要用 `>|`。

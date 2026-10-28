@@ -1,0 +1,65 @@
+---
+import instagram from '../assets/icons/instagram.svg?raw';
+import threads from '../assets/icons/threads.svg?raw';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+const social = [
+  { name: 'Instagram', href: 'https://www.instagram.com/yours_yunya/', icon: instagram },
+  { name: 'Threads', href: 'https://www.threads.com/@yours_yunya', icon: threads },
+];
+---
+
+{/* Instagram and Threads icons (SPEC 5.1): at the bottom of the sidebar from 1024px, in the footer below that. */}
+<ul class:list={['social', className]}>
+  {
+    social.map((s) => (
+      <li>
+        {/* Opens in a new tab, which the name announces since the icon can't say it (SPEC 5.1). */}
+        <a
+          href={s.href}
+          target="_blank"
+          rel="me noopener"
+          aria-label={`${s.name} (opens in a new tab)`}
+          set:html={s.icon}
+        />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .social {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-chrome-muted);
+  }
+
+  /* 16px glyph inside a 32px target. Icon-only links have no text to underline, so they fade on hover. */
+  a {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    transition: opacity 0.2s;
+  }
+
+  a:hover {
+    opacity: 0.55;
+  }
+
+  a:focus-visible {
+    outline-color: var(--color-chrome-text);
+  }
+
+  a :global(svg) {
+    width: 16px;
+    height: 16px;
+  }
+</style>

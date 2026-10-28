@@ -3,6 +3,12 @@ export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = 'en';
 
+/**
+ * Locales the site is built in (SPEC 4). Chinese is translated but not published yet. To publish it, add 'zh' here
+ * and rename src/pages/_zh back to src/pages/zh: the language switch, hreflang links and the bilingual 404 follow.
+ */
+export const publishedLocales: readonly Locale[] = ['en'];
+
 /** Value for <html lang> and hreflang. */
 export const htmlLang: Record<Locale, string> = {
   en: 'en',
@@ -18,7 +24,7 @@ const en = {
   'lang.label': 'Language',
   'category.prints': 'Limited Edition Prints',
   'category.postcards': 'Postcards',
-  'work.back': 'Back to work',
+  'work.back': 'Back to {wall}',
   'about.title': 'About',
   'meta.home.title': 'Yunya Hsu — Illustration',
   'meta.postcards.title': 'Postcards — Yunya Hsu',
@@ -38,7 +44,7 @@ const zh: Record<UiKey, string> = {
   'lang.label': '語言',
   'category.prints': '限量版畫',
   'category.postcards': '明信片',
-  'work.back': '回到作品牆',
+  'work.back': '回到{wall}',
   'about.title': '關於',
   'meta.home.title': 'Yunya Hsu — 插畫',
   'meta.postcards.title': '明信片 — Yunya Hsu',

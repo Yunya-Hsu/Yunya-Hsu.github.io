@@ -3,4 +3,5 @@ export const FIRST_WORK = '/works/placeholder-1/';
 
 export const neutralPaths = ['/', '/postcards/', '/about/', FIRST_WORK];
 
-export const allPages = [...neutralPaths, ...neutralPaths.map((p) => `/zh${p}`)];
+// Only English is published for now (SPEC 4). Add the /zh/ twins back when Chinese is.
+export const allPages = neutralPaths;

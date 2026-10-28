@@ -15,6 +15,8 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // Safari moves focus differently from Chromium on taps, which once broke the Work menu on iPhones.
+    { name: 'iphone', use: { ...devices['iPhone 13'] }, testMatch: /work-menu\.spec\.ts/ },
   ],
   webServer: {
     command: `npm run build && npm run preview -- --port ${port} --ignore-lock`,

@@ -30,15 +30,21 @@
   --color-muted: #625d52;
   --color-line: #ddd7cb;
   --color-placeholder: #dcd6ca;
-  --color-hover-bg: #4a453d; /* header hover patch (SPEC 2.5) */
+  --color-hover-bg: #4a453d; /* hover patch on the wall, e.g. in the Work menu (SPEC 2.5) */
   --color-hover-text: #fff;
-  --color-footer-bg: #d9d1c4;
-  --color-footer-text: #4a453d;
+
+  /* The dark frame: the sidebar, or the top header and footer band on smaller screens (SPEC 2.1). */
+  --color-chrome-bg: #45403a;
+  --color-chrome-text: #f4f1ea; /* selected items: 9.1:1 */
+  --color-chrome-muted: #cbc4b8; /* other items and icons: 5.9:1 */
+  --color-chrome-hover-bg: #eeeae2; /* the hover patch flips to light on the dark frame */
+  --color-chrome-hover-text: #2f2c27;
   --shadow-print: 0 1px 2px rgba(60, 50, 30, 0.1), 0 6px 18px rgba(60, 50, 30, 0.08);
   --shadow-print-large: 0 1px 2px rgba(60, 50, 30, 0.1), 0 10px 28px rgba(60, 50, 30, 0.1);
 
   --gutter: clamp(16px, 4vw, 64px);
   --max-width: 1440px;
+  --sidebar: 260px; /* width of the header column from 1024px (SPEC 5.1) */
   --text-small: 0.875rem;
 }
 
@@ -70,6 +76,30 @@ main {
   max-width: var(--max-width);
   margin-inline: auto;
   padding-inline: var(--gutter);
+  /* Clear of the dark header band above; the band's own padding is part of the dark frame (SPEC 2.4). */
+  padding-top: 32px;
+}
+
+/* From 1024px the header is a sidebar on the left; the page and its footer run down the right (SPEC 5.1). */
+@media (min-width: 1024px) {
+  body {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    grid-template-rows: 1fr auto;
+  }
+
+  .site-header {
+    grid-area: 1 / 1 / 3 / 2;
+  }
+
+  main {
+    grid-area: 1 / 2;
+    padding-top: 48px; /* level with the logo */
+  }
+
+  .site-footer {
+    grid-area: 2 / 2;
+  }
 }
 
 img {

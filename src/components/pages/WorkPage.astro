@@ -15,62 +15,193 @@ const { locale, work } = Astro.props;
 const title = work.title[locale];
 const medium = work.medium[locale];
 const description = locale === 'zh' ? `${title}，${work.year}。${medium}。` : `${title}, ${work.year}. ${medium}.`;
+const wall = t(locale, `category.${work.category}`);
+const wallHref = localizePath(locale, wallPath(work.category));
+
+// Height of everything that must share the first screen with the artwork (SPEC 5.3), measured. From 1024px the
+// details sit beside the artwork, leaving only the page's 48px top padding and 48px of air below. Narrower screens
+// stack the header (258px on phones, 296px from 600px) and the page's 32px top padding above, and the 24px gap and
+// 31px title below, plus 16px of air.
+const CHROME = {
+  phone: '361px',
+  tablet: '399px',
+  desktop: '96px',
+};
+// On very short screens (a phone held sideways) the artwork keeps this much height and the title moves below.
+const MIN_HEIGHT = '240px';
+// Width of the details column beside the artwork from 1024px, and the gap between them.
+const INFO_WIDTH = '260px';
+const INFO_GAP = '64px';
+
+// Rendered width: the 1000px cap, the content width (less the sidebar and the details column from 1024px), or the
+// height cap times the work's ratio, whichever is smallest. vh rather than svh here: browsers may not read svh in
+// `sizes`, and vh is never smaller.
+const ratio = work.image.width / work.image.height;
+const byHeight = (chrome: string) => `calc(max(${MIN_HEIGHT}, 100vh - ${chrome}) * ${ratio.toFixed(4)})`;
+const sizes = [
+  `(min-width: 1024px) min(1000px, calc(92vw - 260px - ${INFO_WIDTH} - ${INFO_GAP}), ${byHeight(CHROME.desktop)})`,
+  `(min-width: 600px) min(1000px, 92vw, ${byHeight(CHROME.tablet)})`,
+  `min(calc(100vw - 32px), ${byHeight(CHROME.phone)})`,
+].join(', ');
 ---
 
-<BaseLayout locale={locale} title={`${title} — Yunya Hsu`} description={description} path={`/works/${work.slug}/`}>
+<BaseLayout
+  locale={locale}
+  title={`${title} — Yunya Hsu`}
+  description={description}
+  path={`/works/${work.slug}/`}
+  image={{ src: work.image, alt: work.alt[locale] }}
+>
   <article class="work">
     <Image
       src={work.image}
       alt={work.alt[locale]}
       widths={[800, 1200, 1600, 2000]}
-      sizes="100vw"
+      sizes={sizes}
       loading="eager"
+      fetchpriority="high"
       class="artwork"
     />
     <div class="info">
+      {/* Visible text is the wall's name; the accessible name says where it leads and contains it (WCAG 2.5.3). */}
+      <a class="back" href={wallHref} aria-label={t(locale, 'work.back').replace('{wall}', wall)}>
+        <span aria-hidden="true">‹</span>
+        {wall}
+      </a>
       <h1>{title}</h1>
       <p>{work.year}</p>
       <p>{medium}</p>
       {work.edition && <p>{work.edition[locale]}</p>}
     </div>
-    <p class="back"><a href={localizePath(locale, wallPath(work.category))}>{t(locale, 'work.back')}</a></p>
   </article>
 </BaseLayout>
 
-<style>
+<script>
+  // Coming from the wall, "back" is the browser's own Back, so the wall reopens where you had scrolled to
+  // (SPEC 5.3). Anyone who arrived another way, such as a shared link, follows the link to the top of the wall.
+  const back = document.querySelector<HTMLAnchorElement>('.work .back')!;
+  back.addEventListener('click', (event) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const from = document.referrer && new URL(document.referrer);
+    if (from && from.origin === location.origin && from.pathname === back.pathname && history.length > 1) {
+      event.preventDefault();
+      history.back();
+    }
+  });
+</script>
+
+<style
+  define:vars={{
+    chromePhone: CHROME.phone,
+    chromeTablet: CHROME.tablet,
+    chromeDesktop: CHROME.desktop,
+    minHeight: MIN_HEIGHT,
+    infoWidth: INFO_WIDTH,
+    infoGap: INFO_GAP,
+  }}
+>
+  /* SPEC 5.3. Phones and tablets: artwork, then its details centred beneath, the back link last. */
   .work {
+    --chrome: var(--chromePhone);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
   }
 
-  /* Keep the whole artwork on one screen (header + info take roughly 12rem). */
+  /* The whole artwork (and, where it sits below, the title) fits on the first screen, except on very short screens
+     such as a landscape phone, where the artwork keeps a minimum height. */
   .artwork {
     width: auto;
-    max-height: calc(100svh - 12rem);
-    object-fit: contain;
+    max-width: min(100%, 1000px);
+    max-height: max(var(--minHeight), 100svh - var(--chrome));
+    box-shadow: var(--shadow-print-large);
   }
 
   .info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
     text-align: center;
     color: var(--color-muted);
-    font-size: var(--text-small);
+    font-size: 0.9375rem;
+    font-style: italic;
   }
 
   .info h1 {
-    margin: 0;
+    margin: 0 0 4px;
     color: var(--color-text);
-    font-size: inherit;
+    font-size: 1.375rem;
+    font-style: normal;
     font-weight: 500;
+    letter-spacing: 0.1em;
+    line-height: 1.4;
   }
 
-  .info p,
-  .back {
+  .info p {
     margin: 0;
   }
 
+  /* Chinese has no true italic (SPEC 2.3). */
+  :global(:lang(zh-Hant)) .info {
+    font-style: normal;
+  }
+
+  /* SPEC 2.5: secondary colour; hover is white on a dark patch 6px past the text, never an underline. */
   .back {
-    font-size: var(--text-small);
+    order: 1;
+    display: inline-flex;
+    gap: 0.5em;
+    margin-top: 24px;
+    padding-block: 2px;
+    border-radius: 2px;
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    transition:
+      color 0.15s,
+      background-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .back:hover {
+    color: var(--color-hover-text);
+    background-color: var(--color-hover-bg);
+    box-shadow:
+      -6px 0 0 var(--color-hover-bg),
+      6px 0 0 var(--color-hover-bg);
+    text-decoration: none;
+  }
+
+  @media (min-width: 600px) {
+    .work {
+      --chrome: var(--chromeTablet);
+    }
+  }
+
+  /* From 1024px the details stand beside the artwork, left-aligned, the back link on top, so the artwork can take
+     nearly the full height of the screen. */
+  @media (min-width: 1024px) {
+    .work {
+      --chrome: var(--chromeDesktop);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--infoWidth);
+      column-gap: var(--infoGap);
+      align-items: start;
+    }
+
+    .artwork {
+      justify-self: center;
+    }
+
+    .info {
+      align-items: flex-start;
+      margin-top: 0;
+      text-align: left;
+    }
+
+    .back {
+      order: 0;
+      margin: 0 0 40px;
+    }
   }
 </style>

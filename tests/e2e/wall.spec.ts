@@ -28,13 +28,6 @@ test('the category name is a heading for screen readers only', async ({ page }) 
   await expect(page.getByRole('heading', { level: 1 })).toHaveClass(/sr-only/);
 });
 
-test('Chinese walls link to Chinese work pages', async ({ page }) => {
-  await page.goto('/zh/postcards/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('明信片');
-  await expect(page).toHaveTitle('明信片 — Yunya Hsu');
-  await expect(works(page).first().getByRole('link')).toHaveAttribute('href', '/zh/works/placeholder-4/');
-});
-
 test('the wall works without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
