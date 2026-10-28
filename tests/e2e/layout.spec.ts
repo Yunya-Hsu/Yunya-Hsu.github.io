@@ -156,3 +156,16 @@ test('the selected underline is square, 6px under the text and no wider than it'
     expect(line.top - line.textBottom).toBeCloseTo(6, 0);
   }
 });
+
+test('under 1024px the page starts 32px below the dark header band', async ({ page, isMobile }) => {
+  if (!isMobile) await page.setViewportSize({ width: 800, height: 1000 });
+  for (const [path, first] of [
+    ['/', '.wall .cell'],
+    ['/works/placeholder-1/', '.artwork'],
+  ]) {
+    await page.goto(path);
+    const header = (await page.getByRole('banner').boundingBox())!;
+    const top = (await page.locator(first).first().boundingBox())!.y;
+    expect(top - (header.y + header.height), path).toBeCloseTo(32, 0);
+  }
+});

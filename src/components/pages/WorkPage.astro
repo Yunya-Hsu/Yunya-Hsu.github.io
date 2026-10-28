@@ -20,10 +20,11 @@ const wallHref = localizePath(locale, wallPath(work.category));
 
 // Height of everything that must share the first screen with the artwork (SPEC 5.3), measured. From 1024px the
 // details sit beside the artwork, leaving only the page's 48px top padding and 48px of air below. Narrower screens
-// stack the header (258px on phones, 296px from 600px) above, and the 24px gap and 31px title below, plus 16px of air.
+// stack the header (258px on phones, 296px from 600px) and the page's 32px top padding above, and the 24px gap and
+// 31px title below, plus 16px of air.
 const CHROME = {
-  phone: '329px',
-  tablet: '367px',
+  phone: '361px',
+  tablet: '399px',
   desktop: '96px',
 };
 // On very short screens (a phone held sideways) the artwork keeps this much height and the title moves below.

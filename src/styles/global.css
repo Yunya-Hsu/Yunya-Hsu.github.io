@@ -76,6 +76,8 @@ main {
   max-width: var(--max-width);
   margin-inline: auto;
   padding-inline: var(--gutter);
+  /* Clear of the dark header band above; the band's own padding is part of the dark frame (SPEC 2.4). */
+  padding-top: 32px;
 }
 
 /* From 1024px the header is a sidebar on the left; the page and its footer run down the right (SPEC 5.1). */
