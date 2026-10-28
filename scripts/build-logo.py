@@ -1,4 +1,6 @@
-"""Build src/assets/brand/logo.svg: outlined "YOURS," over the traced signature (SPEC 2.2).
+"""Build src/assets/brand/logo.svg and logo-light.svg: outlined "YOURS," over the traced signature (SPEC 2.2).
+
+logo.svg is for light backgrounds; logo-light.svg, the one the site shows, is for the dark header.
 
 Not part of the site build; run by hand when the signature or its placement changes.
 
@@ -12,9 +14,10 @@ Not part of the site build; run by hand when the signature or its placement chan
      potrace sig.pgm -s -o signature.svg --turdsize 8 --alphamax 1.0 --opttolerance 0.5 --flat
      (threshold 215 suits ink around grey 160-190 on white paper; adjust for other scans)
 2. Build the logo (needs: pip install fonttools brotli):
-     python3 scripts/build-logo.py . signature.svg [sig_x] [yours_drop]
-   sig_x      signature indent, in units where "YOURS," is 11 high (default 65)
+     python3 scripts/build-logo.py . signature.svg [sig_x] [yours_drop] [gap]
+   sig_x      signature indent, in units where "YOURS," is 11 high (default 30)
    yours_drop move "YOURS," down without moving the signature (default 5)
+   gap        space from the top of "YOURS,"'s 11-unit line to the top of the signature, minus 11 (default 29)
 """
 import math, re, sys
 from fontTools.ttLib import TTFont
@@ -23,9 +26,9 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
 repo, sig_file = sys.argv[1], sys.argv[2]
-sig_x = float(sys.argv[3]) if len(sys.argv) > 3 else 65.0
+sig_x = float(sys.argv[3]) if len(sys.argv) > 3 else 30.0
 drop = float(sys.argv[4]) if len(sys.argv) > 4 else 5.0
-gap = 10.0
+gap = float(sys.argv[5]) if len(sys.argv) > 5 else 29.0
 
 font = instancer.instantiateVariableFont(TTFont(f'{repo}/public/fonts/cormorant-garamond.woff2'), {'wght': 600})
 upem = font['head'].unitsPerEm
@@ -52,10 +55,15 @@ sig_h = 84.0; sig_s = sig_h / vb[3]; sig_y = size + gap
 # Round up, never down, so the viewBox can't clip the signature's last stroke.
 width = math.ceil(max(yours_w, sig_x + vb[2] * sig_s) * 10) / 10; height = sig_y + sig_h
 
-open(f'{repo}/src/assets/brand/logo.svg', 'w').write(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:g} {height:g}" aria-hidden="true" focusable="false">
-<!-- "YOURS," is Cormorant Garamond 600 (SIL OFL) converted to outlines; "Yunya" is Yunya Hsu's handwritten signature traced with potrace. Colours: SPEC 2.1. -->
-<path fill="#857467" d="{yours_d}"/>
-<g fill="#4a453d" transform="translate({sig_x:g} {sig_y:g}) scale({sig_s:.6f})"><g transform="{g.group(1)}">{g.group(2).strip()}</g></g>
+# (file, "YOURS," colour, signature colour, note); colours: SPEC 2.1.
+for name, yours_fill, sig_fill, note in [
+    ('logo.svg', '#857467', '#4a453d', 'Colours: SPEC 2.1.'),
+    ('logo-light.svg', '#b8ae9f', '#f4f1ea', 'Light version for the dark header; colours: SPEC 2.1.'),
+]:
+    open(f'{repo}/src/assets/brand/{name}', 'w').write(f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:g} {height:g}" aria-hidden="true" focusable="false">
+<!-- "YOURS," is Cormorant Garamond 600 (SIL OFL) converted to outlines; "Yunya" is Yunya Hsu's handwritten signature traced with potrace. {note} -->
+<path fill="{yours_fill}" d="{yours_d}"/>
+<g fill="{sig_fill}" transform="translate({sig_x:g} {sig_y:g}) scale({sig_s:.6f})"><g transform="{g.group(1)}">{g.group(2).strip()}</g></g>
 </svg>
 ''')
 print(f'viewBox {width:g} x {height:g}, sig_x {sig_x:g}')

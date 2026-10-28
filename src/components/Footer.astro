@@ -1,35 +1,17 @@
 ---
-import instagram from '../assets/icons/instagram.svg?raw';
-import threads from '../assets/icons/threads.svg?raw';
-import { t, type Locale } from '../i18n/ui';
+import SocialLinks from './SocialLinks.astro';
 
-interface Props {
-  locale: Locale;
-}
-
-const { locale } = Astro.props;
 const year = new Date().getFullYear();
-const social = [
-  { name: 'Instagram', href: 'https://www.instagram.com/yours_yunya/', icon: instagram },
-  { name: 'Threads', href: 'https://www.threads.com/@yours_yunya', icon: threads },
-];
 ---
 
 <footer class="site-footer">
-  <p>© {year} {t(locale, 'site.name')}</p>
-  <ul>
-    {
-      social.map((s) => (
-        <li>
-          <a href={s.href} rel="me" aria-label={s.name} set:html={s.icon} />
-        </li>
-      ))
-    }
-  </ul>
+  <SocialLinks class="footer-social" />
+  {/* The brand, as in the logo (SPEC 5.1). */}
+  <p>© {year} Yours, Yunya</p>
 </footer>
 
 <style>
-  /* SPEC 2.1, 5.1: warm grey band, centred small italic copyright, social links as icons. */
+  /* SPEC 2.1, 5.1: a band in the dark frame's colour, the social icons over a small italic copyright, centred. */
   .site-footer {
     display: flex;
     flex-direction: column;
@@ -37,8 +19,8 @@ const social = [
     gap: 6px;
     margin-top: 120px;
     padding: 32px var(--gutter);
-    background: var(--color-footer-bg);
-    color: var(--color-footer-text);
+    background: var(--color-chrome-bg);
+    color: var(--color-chrome-muted);
     font-size: 0.875rem;
     font-style: italic;
   }
@@ -47,29 +29,17 @@ const social = [
     margin: 0;
   }
 
-  ul {
-    display: flex;
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+  /* SPEC 5.1: from 1024px no band, just the copyright, quietly centred at the end of the page; the icons are in the
+     sidebar then (Header.astro). */
+  @media (min-width: 1024px) {
+    .site-footer {
+      padding-bottom: 48px;
+      background: none;
+      color: var(--color-muted);
+    }
 
-  /* 16px glyph inside a 32px target. Icon-only links have no text to underline, so they fade on hover. */
-  a {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    transition: opacity 0.2s;
-  }
-
-  a:hover {
-    opacity: 0.55;
-  }
-
-  a :global(svg) {
-    width: 16px;
-    height: 16px;
+    .site-footer :global(.footer-social) {
+      display: none;
+    }
   }
 </style>

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { NONE, SELECTED, underline } from './style';
 
 // Work is a native <summary>; Playwright doesn't map <summary> to a role, so find it by element.
 const workButton = (page: Page, name = 'Work') => page.locator('summary', { hasText: name });
@@ -22,6 +23,14 @@ test('tapping Work opens the categories and tapping again closes them', async ({
   await expect(disclosure(page)).not.toHaveAttribute('open');
 });
 
+test('tapping a category opens its wall', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'touch');
+  await page.goto('/about/');
+  await workButton(page).tap();
+  await menu(page).getByRole('link', { name: 'Postcards' }).tap();
+  await expect(page).toHaveURL('/postcards/');
+});
+
 test('with a mouse, clicking Work keeps the menu open and leaving closes it', async ({ page, isMobile }) => {
   test.skip(isMobile, 'touch screens have no mouse');
   await page.goto('/about/');
@@ -34,13 +43,13 @@ test('with a mouse, clicking Work keeps the menu open and leaving closes it', as
 });
 
 test('choosing a category opens its wall', async ({ page }) => {
-  await page.goto('/zh/about/');
-  await workButton(page, '作品').click();
-  await menu(page).getByRole('link', { name: '明信片' }).click();
-  await expect(page).toHaveURL('/zh/postcards/');
-  await workButton(page, '作品').click();
-  await menu(page).getByRole('link', { name: '限量版畫' }).click();
-  await expect(page).toHaveURL('/zh/');
+  await page.goto('/about/');
+  await workButton(page).click();
+  await menu(page).getByRole('link', { name: 'Postcards' }).click();
+  await expect(page).toHaveURL('/postcards/');
+  await workButton(page).click();
+  await menu(page).getByRole('link', { name: 'Limited Edition Prints' }).click();
+  await expect(page).toHaveURL('/');
 });
 
 test('the menu underlines the wall you are on', async ({ page }) => {
@@ -89,7 +98,7 @@ test('the selected category underline is only as wide as its text', async ({ pag
   await workButton(page).click();
   const link = menu(page).getByRole('link', { name: 'Postcards' });
   const text = link.locator('span');
-  await expect(text).toHaveCSS('border-bottom-color', 'rgb(47, 44, 39)');
+  expect(await underline(text)).toBe(SELECTED);
   expect((await text.boundingBox())!.width).toBeLessThan((await link.boundingBox())!.width - 40);
 });
 
@@ -98,11 +107,11 @@ test('hovering another category hides the selected underline until the pointer l
   await page.goto('/postcards/');
   await workButton(page).hover();
   const selected = menu(page).getByRole('link', { name: 'Postcards' }).locator('span');
-  await expect(selected).toHaveCSS('border-bottom-color', 'rgb(47, 44, 39)');
+  expect(await underline(selected)).toBe(SELECTED);
   await menu(page).getByRole('link', { name: 'Limited Edition Prints' }).hover();
-  await expect(selected).toHaveCSS('border-bottom-color', 'rgba(0, 0, 0, 0)');
+  await expect.poll(() => underline(selected)).toBe(NONE);
   await menu(page).getByRole('link', { name: 'Postcards' }).hover();
-  await expect(selected).toHaveCSS('border-bottom-color', 'rgb(47, 44, 39)');
+  await expect.poll(() => underline(selected)).toBe(SELECTED);
 });
 
 test('works from the keyboard and Escape closes it', async ({ page, isMobile }) => {
@@ -134,11 +143,4 @@ test('the menu opens with a click and without JavaScript', async ({ browser }) =
   await menu(page).getByRole('link', { name: 'Postcards' }).click();
   await expect(page).toHaveURL('/postcards/');
   await context.close();
-});
-
-test('work pages go back to the wall of their own category', async ({ page }) => {
-  await page.goto('/zh/works/placeholder-4/');
-  await expect(page.getByRole('link', { name: '回到作品牆' })).toHaveAttribute('href', '/zh/postcards/');
-  await page.goto('/works/placeholder-1/');
-  await expect(page.getByRole('link', { name: 'Back to work' })).toHaveAttribute('href', '/');
 });

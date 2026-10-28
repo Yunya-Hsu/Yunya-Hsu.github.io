@@ -12,10 +12,17 @@ test('logo is a cacheable SVG image inside a link named "Yours, Yunya"', async (
   expect(svg).not.toContain('<text');
 });
 
-test('logo is 140px tall on wider screens and 104px on phones', async ({ page, isMobile }) => {
+test('logo is 111px tall on phones, 149px on tablets and 128px in the desktop sidebar', async ({ page, isMobile }) => {
+  const height = async () => (await page.locator('.logo img').boundingBox())!.height;
   await page.goto('/');
-  const box = await page.locator('.logo img').boundingBox();
-  expect(box?.height).toBeCloseTo(isMobile ? 104 : 140, 0);
+  if (isMobile) {
+    expect(await height()).toBeCloseTo(111, 0);
+    return;
+  }
+  await page.setViewportSize({ width: 800, height: 900 });
+  expect(await height()).toBeCloseTo(149, 0);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  expect(await height()).toBeCloseTo(128, 0);
 });
 
 test('uses the oat wall colour and loads Cormorant Garamond from the site', async ({ page }) => {
@@ -34,4 +41,51 @@ test('uses the oat wall colour and loads Cormorant Garamond from the site', asyn
   // Self-hosted only: no Google Fonts or other third-party font requests.
   expect(fontRequests.length).toBeGreaterThan(0);
   for (const r of fontRequests) expect(r).toMatch(/^localhost:\d+\/fonts\//);
+});
+
+test.describe('dark frame (SPEC 2.1)', () => {
+  const FRAME = 'rgb(69, 64, 58)';
+
+  test('the header is dark and shows the light logo', async ({ page, request }) => {
+    await page.goto('/');
+    await expect(page.getByRole('banner')).toHaveCSS('background-color', FRAME);
+    const src = await page.locator('.logo img').getAttribute('src');
+    const svg = await (await request.get(src!)).text();
+    expect(svg).toContain('fill="#f4f1ea"');
+  });
+
+  test('nav items are light, and hover flips to a light patch with dark text', async ({ page, isMobile }) => {
+    await page.goto('/');
+    const about = page.getByRole('link', { name: 'About', exact: true });
+    await expect(about).toHaveCSS('color', 'rgb(203, 196, 184)');
+    await expect(page.locator('summary', { hasText: 'Work' })).toHaveCSS('color', 'rgb(244, 241, 234)');
+    if (isMobile) return;
+    await about.hover();
+    await expect(about).toHaveCSS('background-color', 'rgb(238, 234, 226)');
+    await expect(about).toHaveCSS('color', 'rgb(47, 44, 39)');
+  });
+
+  test('the Work menu keeps the wall’s colours, since it hangs over the page', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'hover');
+    await page.goto('/about/');
+    await page.locator('summary', { hasText: 'Work' }).hover();
+    const prints = page.locator('#work-menu').getByRole('link', { name: 'Limited Edition Prints' });
+    await expect(prints).toHaveCSS('color', 'rgb(98, 93, 82)');
+  });
+
+  test('on phones the footer is a dark band like the header', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout');
+    await page.goto('/');
+    await expect(page.getByRole('contentinfo')).toHaveCSS('background-color', FRAME);
+  });
+
+  test('on desktop the footer has no band and the icons sit on the dark sidebar', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'desktop layout');
+    await page.goto('/');
+    await expect(page.getByRole('contentinfo')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.getByRole('banner').getByRole('link', { name: 'Instagram' })).toHaveCSS(
+      'color',
+      'rgb(203, 196, 184)',
+    );
+  });
 });

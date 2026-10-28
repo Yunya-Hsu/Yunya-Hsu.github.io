@@ -19,10 +19,11 @@ const titles: Record<Category, UiKey> = { prints: 'meta.home.title', postcards: 
 // One desktop row. On phones the next two are close enough that the browser's
 // lazy-load margin fetches them right away anyway.
 const EAGER_COUNT = 3;
-// Width of one cell: content is min(100vw, 1440px) minus gutters (4vw, or 16px on small phones) and column gaps.
+// Width of one cell: content is the page width (less the sidebar from 1024px, capped at 1440px) minus gutters
+// (4vw, or 16px on small phones) and column gaps.
 const sizes = [
-  '(min-width: 1440px) 410px',
-  '(min-width: 1024px) calc(30.6vw - 32px)',
+  '(min-width: 1700px) 405px',
+  '(min-width: 1024px) calc((92vw - 356px) / 3)',
   '(min-width: 600px) calc(46vw - 16px)',
   'calc(100vw - 32px)',
 ].join(', ');

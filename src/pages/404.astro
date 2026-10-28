@@ -1,7 +1,9 @@
 ---
+import { publishedLocales } from '../i18n/ui';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-// GitHub Pages serves a single 404.html for every language, so this page is bilingual.
+// GitHub Pages serves a single 404.html for every language, so once Chinese is published this page is bilingual.
+const bilingual = publishedLocales.includes('zh');
 ---
 
 <BaseLayout locale="en" title="Page not found — Yunya Hsu" description="This page doesn't exist.">
@@ -10,10 +12,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <h1>Page not found</h1>
       <p><a href="/">Back to the work</a></p>
     </section>
-    <section lang="zh-Hant">
-      <h2>找不到這個頁面</h2>
-      <p><a href="/zh/">回到作品牆</a></p>
-    </section>
+    {
+      bilingual && (
+        <section lang="zh-Hant">
+          <h2>找不到這個頁面</h2>
+          <p><a href="/zh/">回到作品牆</a></p>
+        </section>
+      )
+    }
   </div>
 </BaseLayout>
 
