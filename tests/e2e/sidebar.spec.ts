@@ -45,6 +45,8 @@ test('Work and About stack in a column, and the categories open to the right of 
   expect(panel.x).toBeGreaterThan(workBox.x + workBox.width);
   expect(prints.y + prints.height / 2).toBeCloseTo(workBox.y + workBox.height / 2, -1);
   expect(panel.x > aboutBox.x + aboutBox.width || panel.y + panel.height < aboutBox.y).toBe(true);
+  // Dark like the sidebar it grows out of, so it never sits half on the frame and half on the wall.
+  await expect(menu(page).locator('ul')).toHaveCSS('background-color', 'rgb(69, 64, 58)');
   await expect(about).toBeVisible();
   expect((await about.boundingBox())!.y).toBeCloseTo(aboutBox.y, 0);
   // The pointer can travel across into the menu without it closing.

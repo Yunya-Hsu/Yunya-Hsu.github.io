@@ -1,10 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { NONE, SELECTED, underline } from './style';
+import { NONE, SELECTED, SELECTED_ON_FRAME, underline } from './style';
 
 // Work is a native <summary>; Playwright doesn't map <summary> to a role, so find it by element.
 const workButton = (page: Page, name = 'Work') => page.locator('summary', { hasText: name });
 const disclosure = (page: Page) => page.locator('details.work-menu');
 const menu = (page: Page) => page.locator('#work-menu');
+// Desktop runs at 1280px, where the menu grows out of the dark sidebar; phones show it light on the wall.
+const selected = (isMobile: boolean) => (isMobile ? SELECTED : SELECTED_ON_FRAME);
 
 test('Work is a disclosure, not a link, and its menu starts closed', async ({ page }) => {
   await page.goto('/about/');
@@ -86,19 +88,20 @@ test('every category hover patch spans the full width of the menu', async ({ pag
   for (const name of ['Limited Edition Prints', 'Postcards']) {
     const link = menu(page).getByRole('link', { name });
     await link.hover();
-    await expect(link).toHaveCSS('background-color', 'rgb(74, 69, 61)');
+    // The hover patch flips to light on the dark menu (SPEC 2.5).
+    await expect(link).toHaveCSS('background-color', 'rgb(238, 234, 226)');
     const box = (await link.boundingBox())!;
     expect(box.x).toBeCloseTo(panel.x, 0);
     expect(box.width).toBeCloseTo(panel.width, 0);
   }
 });
 
-test('the selected category underline is only as wide as its text', async ({ page }) => {
+test('the selected category underline is only as wide as its text', async ({ page, isMobile }) => {
   await page.goto('/postcards/');
   await workButton(page).click();
   const link = menu(page).getByRole('link', { name: 'Postcards' });
   const text = link.locator('span');
-  expect(await underline(text)).toBe(SELECTED);
+  expect(await underline(text)).toBe(selected(isMobile));
   expect((await text.boundingBox())!.width).toBeLessThan((await link.boundingBox())!.width - 40);
 });
 
@@ -107,11 +110,11 @@ test('hovering another category hides the selected underline until the pointer l
   await page.goto('/postcards/');
   await workButton(page).hover();
   const selected = menu(page).getByRole('link', { name: 'Postcards' }).locator('span');
-  expect(await underline(selected)).toBe(SELECTED);
+  expect(await underline(selected)).toBe(SELECTED_ON_FRAME);
   await menu(page).getByRole('link', { name: 'Limited Edition Prints' }).hover();
   await expect.poll(() => underline(selected)).toBe(NONE);
   await menu(page).getByRole('link', { name: 'Postcards' }).hover();
-  await expect.poll(() => underline(selected)).toBe(SELECTED);
+  await expect.poll(() => underline(selected)).toBe(SELECTED_ON_FRAME);
 });
 
 test('works from the keyboard and Escape closes it', async ({ page, isMobile }) => {

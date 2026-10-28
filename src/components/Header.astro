@@ -417,6 +417,24 @@ const langLabels: Record<Locale, { short: string; name: string }> = {
       padding-left: 16px;
     }
 
+    /* Dark like the sidebar it grows out of, so it never sits half on the frame and half on the wall. */
+    .menu {
+      --nav-fg: var(--color-chrome-muted);
+      --nav-current: var(--color-chrome-text);
+      --nav-hover-bg: var(--color-chrome-hover-bg);
+      --nav-hover-fg: var(--color-chrome-hover-text);
+    }
+
+    /* A dark shadow on every side, a little lower, lifts it off the wall like a card. */
+    .menu ul {
+      background: var(--color-chrome-bg);
+      box-shadow: 0 4px 24px rgba(40, 32, 20, 0.4);
+    }
+
+    .menu :focus-visible {
+      outline-color: var(--color-chrome-text);
+    }
+
     .menu a {
       text-align: left;
     }
