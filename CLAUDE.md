@@ -4,6 +4,8 @@ Yunya Hsu 的插畫作品集網站（Astro 靜態網站，部署在 GitHub Pages
 
 **[SPEC.md](SPEC.md) 是唯一的規格依據。** 動工前先讀；文件沒寫到或標示 `TODO` 的地方，先問 Yunya，不要自行假設。和 Yunya 確認的新決策要寫回 SPEC.md。
 
+**一律用繁體中文回應 Yunya。**
+
 ## 指令
 
 ```bash
