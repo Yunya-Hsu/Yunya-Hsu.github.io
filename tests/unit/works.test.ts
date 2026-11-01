@@ -1,8 +1,8 @@
 import type { ImageMetadata } from 'astro';
 import { describe, expect, it } from 'vitest';
-import { imagesBySlug, isPlaceholder, resolveWorks, type WorkData } from '../../src/lib/works';
+import { MAX_IMAGE_EDGE, imagesBySlug, isPlaceholder, resolveWorks, type WorkData } from '../../src/lib/works';
 
-const image = (src: string) => ({ src, width: 100, height: 100, format: 'jpg' }) as ImageMetadata;
+const image = (src: string, width = 100, height = 100) => ({ src, width, height, format: 'jpg' }) as ImageMetadata;
 
 const data = (order: number): WorkData => ({
   title: { en: 'T', zh: 'T' },
@@ -51,6 +51,16 @@ describe('resolveWorks', () => {
     expect(() => resolveWorks([{ id: 'a', data: data(1) }], images('a', 'b'))).toThrow(
       /src\/assets\/works\/b: no data file found/,
     );
+  });
+
+  it('caps the longest side of an image at 1600px', () => {
+    expect(MAX_IMAGE_EDGE).toBe(1600);
+    const withImage = (width: number, height: number) =>
+      resolveWorks([{ id: 'a', data: data(1) }], new Map([['a', image('/a.jpg', width, height)]]));
+    expect(withImage(1600, 1280)).toHaveLength(1);
+    expect(withImage(1280, 1600)).toHaveLength(1);
+    expect(() => withImage(1601, 1280)).toThrow(/src\/assets\/works\/a: the image is 1601 × 1280px/);
+    expect(() => withImage(1280, 2000)).toThrow(/longest side at most 1600px/);
   });
 
   it('fails on a duplicate order and names both works', () => {

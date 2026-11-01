@@ -1,5 +1,5 @@
 // Every page on the site, by locale-neutral path. Extend as pages are added.
-export const FIRST_WORK = '/works/placeholder-1/';
+export const FIRST_WORK = '/works/lisbon/';
 
 export const neutralPaths = ['/', '/postcards/', '/about/', '/contact/', FIRST_WORK];
 

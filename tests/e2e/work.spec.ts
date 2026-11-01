@@ -6,20 +6,16 @@ const artwork = (page: Page) => page.locator('.artwork');
 const info = (page: Page) => page.locator('.info');
 const back = (page: Page) => info(page).getByRole('link', { name: /^Back to |^回到/ });
 
-test('shows the work with its title, year, medium and edition', async ({ page }) => {
+test('shows the work with its title, year and medium', async ({ page }) => {
   await page.goto(FIRST_WORK);
-  await expect(artwork(page)).toHaveAttribute('alt', 'Placeholder colour gradient');
-  await expect(info(page).getByRole('heading', { level: 1 })).toHaveText('Placeholder Street Corner');
-  await expect(info(page).locator('p')).toHaveText([
-    '2025',
-    'Digital illustration',
-    'Archival pigment print on cotton rag paper · Edition of 25',
-  ]);
+  await expect(artwork(page)).toHaveAttribute('alt', /^An orange tram/);
+  await expect(info(page).getByRole('heading', { level: 1 })).toHaveText('Lisbon');
+  await expect(info(page).locator('p')).toHaveText(['2026', 'Digital illustration']);
 });
 
 test('leaves the edition out when a work has none', async ({ page }) => {
-  await page.goto('/works/placeholder-2/');
-  await expect(info(page).locator('p')).toHaveText(['2025', 'Digital illustration']);
+  await page.goto('/works/flower-1/');
+  await expect(info(page).locator('p')).toHaveText(['2026', 'Digital illustration']);
 });
 
 test('from 1024px the details stand beside the artwork, left-aligned, the back link on top', async ({ page, isMobile }) => {
@@ -40,15 +36,15 @@ test('on phones the details sit centred under the artwork, the back link last', 
   const art = (await artwork(page).boundingBox())!;
   expect((await info(page).boundingBox())!.y).toBeGreaterThan(art.y + art.height);
   await expect(info(page)).toHaveCSS('text-align', 'center');
-  const edition = (await info(page).locator('p').last().boundingBox())!;
-  expect((await back(page).boundingBox())!.y).toBeGreaterThan(edition.y + edition.height);
+  const details = (await info(page).locator('p').last().boundingBox())!;
+  expect((await back(page).boundingBox())!.y).toBeGreaterThan(details.y + details.height);
 });
 
 test.describe('back link', () => {
   test('names the work’s own wall and leads to it', async ({ page }) => {
     for (const [path, text, name, wall] of [
       [FIRST_WORK, 'Limited Edition Prints', 'Back to Limited Edition Prints', '/'],
-      ['/works/placeholder-4/', 'Postcards', 'Back to Postcards', '/postcards/'],
+      ['/works/band/', 'Postcards', 'Back to Postcards', '/postcards/'],
     ]) {
       await page.goto(path);
       const link = info(page).getByRole('link', { name, exact: true });
@@ -64,14 +60,14 @@ test.describe('back link', () => {
     const scrolled = await page.evaluate(() => scrollY);
     const last = page.locator('.wall > li').last().getByRole('link');
     await last.click();
-    await page.waitForURL('/works/placeholder-6/');
+    await page.waitForURL('/works/flower-in-vase/');
     await back(page).click();
     await page.waitForURL('/');
     await expect.poll(() => page.evaluate(() => scrollY)).toBeCloseTo(scrolled, -1);
   });
 
   test('opened from elsewhere, e.g. a shared link, it goes to the top of the wall', async ({ page }) => {
-    await page.goto('/works/placeholder-7/');
+    await page.goto('/works/cat/');
     await back(page).click();
     await page.waitForURL('/postcards/');
     expect(await page.evaluate(() => scrollY)).toBe(0);
@@ -89,12 +85,12 @@ test.describe('back link', () => {
 });
 
 test('has no previous / next arrows or arrow-key shortcuts', async ({ page, isMobile }) => {
-  await page.goto('/works/placeholder-2/');
+  await page.goto('/works/flower-1/');
   await expect(page.getByRole('main').getByRole('navigation')).toHaveCount(0);
   if (isMobile) return;
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(300);
-  await expect(page).toHaveURL('/works/placeholder-2/');
+  await expect(page).toHaveURL('/works/flower-1/');
 });
 
 test.describe('artwork size', () => {
@@ -111,8 +107,8 @@ test.describe('artwork size', () => {
       [800, 1000],
     ]) {
       await page.setViewportSize({ width, height });
-      // Portrait, landscape and square.
-      for (const path of [FIRST_WORK, '/works/placeholder-2/', '/works/placeholder-3/']) {
+      // Portrait and landscape.
+      for (const path of [FIRST_WORK, '/works/flower-1/']) {
         await page.goto(path);
         await expect(artwork(page)).toHaveJSProperty('complete', true);
         const art = (await artwork(page).boundingBox())!;
@@ -125,7 +121,7 @@ test.describe('artwork size', () => {
 
   test('is never wider than 1000px', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 2000 });
-    await page.goto('/works/placeholder-2/');
+    await page.goto('/works/flower-1/');
     await expect(artwork(page)).toHaveJSProperty('complete', true);
     // Beside the details column on the widest layout it tops out a little under the cap.
     const width = (await artwork(page).boundingBox())!.width;
@@ -147,14 +143,14 @@ test('has a drop shadow like a print on the wall', async ({ page }) => {
 });
 
 test('shares the work itself as the Open Graph image', async ({ page, request }) => {
-  await page.goto('/works/placeholder-4/');
+  await page.goto('/works/band/');
   const meta = (property: string) => page.locator(`meta[property="${property}"]`);
-  await expect(meta('og:title')).toHaveAttribute('content', 'Placeholder Reader — Yunya Hsu');
-  await expect(meta('og:url')).toHaveAttribute('content', `${SITE}/works/placeholder-4/`);
+  await expect(meta('og:title')).toHaveAttribute('content', 'Band — Yunya Hsu');
+  await expect(meta('og:url')).toHaveAttribute('content', `${SITE}/works/band/`);
   await expect(meta('og:image:alt')).toHaveAttribute('content', /\S/);
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   const image = await meta('og:image').getAttribute('content');
-  expect(image).toMatch(new RegExp(`^${SITE}/_astro/placeholder-4\\.[^/]+\\.jpe?g$`));
+  expect(image).toMatch(new RegExp(`^${SITE}/_astro/band\\.[^/]+\\.jpe?g$`));
   // The file is built next to the page: fetch it from the preview server.
   const response = await request.get(new URL(image!).pathname);
   expect(response.headers()['content-type']).toMatch(/image\/jpeg/);
