@@ -15,36 +15,75 @@ const avatar = getAvatar();
 
 <BaseLayout locale={locale} title={t(locale, 'meta.about.title')} description={t(locale, 'meta.description')} path="/about/">
   <article class="about">
+    <div class="page-text">
+      <h1 class="page-title">{t(locale, 'about.title')}</h1>
+      {bio[locale].map((paragraph) => <p>{paragraph}</p>)}
+    </div>
     {
       avatar ? (
-        <Image src={avatar} alt="" widths={[240, 480]} sizes="240px" class="avatar" />
+        <Image
+          src={avatar}
+          alt={t(locale, 'about.avatarAlt')}
+          widths={[260, 520, 780]}
+          sizes="(min-width: 1024px) 260px, (min-width: 600px) 220px, 240px"
+          loading="eager"
+          class="avatar"
+        />
       ) : (
         <div class="avatar placeholder" aria-hidden="true" />
       )
     }
-    <h1 class="sr-only">{t(locale, 'about.title')}</h1>
-    {bio[locale].map((paragraph) => <p>{paragraph}</p>)}
   </article>
 </BaseLayout>
 
 <style>
+  /* SPEC 5.4: on phones the text stands over the photo, which hangs centred; from 600px the text is on the left and
+     the photo on the right. All text is left-aligned. */
   .about {
-    max-width: 36rem;
+    display: grid;
+    gap: 40px;
+    max-width: 804px;
     margin-inline: auto;
-    padding-block: 2rem;
   }
 
+  /* Hung on the wall like the prints (SPEC 2.1). */
   .avatar {
+    justify-self: center;
     width: 240px;
-    height: 240px;
-    max-width: 60vw;
-    max-height: 60vw;
-    border-radius: 50%;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
-    margin-bottom: 2rem;
+    box-shadow: var(--shadow-print);
   }
 
   .placeholder {
     background: var(--color-placeholder);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  /* Between paragraphs only, so the footer's 120px is measured from the content. */
+  p + p {
+    margin-top: 1em;
+  }
+
+  @media (min-width: 600px) {
+    .about {
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .avatar {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about {
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 64px;
+    }
   }
 </style>

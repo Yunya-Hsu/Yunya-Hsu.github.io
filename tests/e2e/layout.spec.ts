@@ -117,6 +117,48 @@ test.describe('404', () => {
   test('is not in the sitemap', async ({ request }) => {
     expect(await (await request.get('/sitemap-0.xml')).text()).not.toContain('404');
   });
+
+  test('nothing in the header is the current section', async ({ page }) => {
+    await page.goto('/no-such-page/');
+    await expect(page.getByRole('banner').locator('[aria-current]')).toHaveCount(0);
+  });
+
+  test('is a centred column: the About title style over its rule, then a quiet link', async ({ page }) => {
+    await page.goto('/no-such-page/');
+    const heading = page.getByRole('heading', { name: 'Page not found', level: 1 });
+    await expect(heading).toHaveCSS('font-size', '28px');
+    await expect(heading).toHaveCSS('font-weight', '500');
+    await expect(heading).toHaveCSS('letter-spacing', '3.36px');
+    await expect(heading).toHaveCSS('text-align', 'center');
+    expect(await heading.evaluate((el) => getComputedStyle(el, '::after').width)).toBe('32px');
+    const link = page.getByRole('link', { name: 'Back to the work' });
+    await expect(link).toHaveCSS('font-size', '15px');
+    await expect(link).toHaveCSS('font-style', 'italic');
+    await expect(link).toHaveCSS('color', 'rgb(98, 93, 82)');
+  });
+
+  test('the title sits on the page’s centre line, not nudged left by its trailing letter-spacing', async ({ page }) => {
+    await page.goto('/no-such-page/');
+    const off = await page.getByRole('heading', { name: 'Page not found', level: 1 }).evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const text = range.getBoundingClientRect();
+      const box = el.getBoundingClientRect();
+      const textCentre = text.left + (text.width - parseFloat(getComputedStyle(el).letterSpacing)) / 2;
+      return textCentre - (box.left + box.width / 2);
+    });
+    expect(Math.abs(off)).toBeLessThan(1);
+  });
+
+  test('its link follows the hover rule: white on a dark patch, no underline', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'touch screens have no hover');
+    await page.goto('/no-such-page/');
+    const link = page.getByRole('link', { name: 'Back to the work' });
+    await link.hover();
+    await expect(link).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(link).toHaveCSS('background-color', 'rgb(74, 69, 61)');
+    await expect(link).toHaveCSS('text-decoration-line', 'none');
+  });
 });
 
 test('About has no contact section: the social links live in the sidebar or footer', async ({ page }) => {

@@ -21,7 +21,7 @@ test('Contact is the last item in the header nav and is current on its page', as
   await nav.getByRole('link', { name: 'Contact', exact: true }).click();
   await expect(page).toHaveURL('/contact/');
   await expect(page).toHaveTitle('Contact — Yunya Hsu');
-  await expect(page.getByRole('heading', { level: 1, name: 'Contact' })).toBeAttached();
+  await expect(page.getByRole('heading', { level: 1, name: 'Contact' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Contact', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(nav.getByRole('link', { name: 'About', exact: true })).not.toHaveAttribute('aria-current');
 });
@@ -191,8 +191,6 @@ test('greeting beside the form from 1024px, above it on smaller screens', async 
     await page.setViewportSize({ width: 1280, height: 800 });
     const { intro, name } = await layout();
     expect(name.x).toBeGreaterThan(intro.x + intro.width);
-    // Extra room above: 64px more than the 48px other pages start at, level with the logo.
-    expect(intro.y).toBeCloseTo(48 + 64, -1);
     await page.setViewportSize({ width: 800, height: 1000 });
   }
   const { intro, name, last } = await layout();
@@ -201,4 +199,54 @@ test('greeting beside the form from 1024px, above it on smaller screens', async 
   expect(last.y).toBeCloseTo(name.y, 0);
   expect(last.x).toBeGreaterThan(name.x + name.width);
   expect(last.x + last.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+});
+
+test('the title matches the About page: same style, rule and place on the page', async ({ page }) => {
+  const title = async (path: string, name: string) => {
+    await page.goto(path);
+    const heading = page.getByRole('heading', { level: 1, name });
+    await expect(heading).toBeVisible();
+    const { x, y } = (await heading.boundingBox())!;
+    const style = await heading.evaluate((el) => {
+      const { fontSize, fontWeight, letterSpacing } = getComputedStyle(el);
+      return { fontSize, fontWeight, letterSpacing, rule: getComputedStyle(el, '::after').width };
+    });
+    return { x, y, style };
+  };
+  const about = await title('/about/', 'About');
+  const contact = await title('/contact/', 'Contact');
+  expect(contact.style).toEqual(about.style);
+  expect(contact.y).toBeCloseTo(about.y, 0);
+  expect(contact.x).toBeCloseTo(about.x, 0);
+});
+
+test('the text matches the About page: same size, line height and letter-spacing', async ({ page }) => {
+  const text = async (path: string) => {
+    await page.goto(path);
+    return page
+      .getByRole('main')
+      .locator('p')
+      .first()
+      .evaluate((el) => {
+        const { fontSize, lineHeight, letterSpacing, fontWeight } = getComputedStyle(el);
+        return { fontSize, lineHeight, letterSpacing, fontWeight };
+      });
+  };
+  expect(await text('/contact/')).toEqual(await text('/about/'));
+});
+
+test('"Hello," is the first line of the text under the title, not a second title', async ({ page }) => {
+  await page.goto('/contact/');
+  const hello = page.getByText('Hello,', { exact: true });
+  await expect(hello).toHaveCSS('font-size', '15px');
+  const title = (await page.getByRole('heading', { level: 1, name: 'Contact' }).boundingBox())!;
+  expect((await hello.boundingBox())!.y).toBeGreaterThan(title.y + title.height - 1);
+});
+
+test('the form starts level with the title from 1024px', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'stacked on phones');
+  await page.goto('/contact/');
+  const title = (await page.getByRole('heading', { level: 1, name: 'Contact' }).boundingBox())!;
+  const form = (await page.locator('form.contact-form').boundingBox())!;
+  expect(form.y).toBeCloseTo(title.y, 0);
 });
