@@ -25,9 +25,9 @@ const required = t(locale, 'contact.required');
   path="/contact/"
 >
   <div class="contact">
-    <h1 class="sr-only">{t(locale, 'contact.title')}</h1>
-    <section class="intro">
-      <p class="greeting">{text.greeting}</p>
+    <section class="intro page-text">
+      <h1 class="page-title">{t(locale, 'contact.title')}</h1>
+      <p>{text.greeting}</p>
       <p>{text.lead}</p>
       <p class="open-to">{text.openToLabel}</p>
       <ul>{text.openTo.map((item) => <li>{item}</li>)}</ul>
@@ -122,22 +122,13 @@ const required = t(locale, 'contact.required');
 </script>
 
 <style>
-  /* SPEC 5.5: phones and tablets stack the greeting over the form; from 1024px the greeting is on the left, the
-     form on the right. */
-  /* Extra room around the page on every side, beyond the site's usual gutters (SPEC 5.5). */
+  /* SPEC 5.5: phones and tablets stack the text over the form; from 1024px the text is on the left and the form on
+     the right, like the text and photo on the About page. */
   .contact {
     display: grid;
     gap: 56px;
     max-width: 36rem;
     margin-inline: auto;
-    padding: 24px 8px 0;
-  }
-
-  /* Smaller and a little airier than body text, so the greeting leads and the rest stays quiet. */
-  .intro {
-    font-size: 0.9375rem;
-    letter-spacing: 0.03em;
-    line-height: 1.8;
   }
 
   .intro p,
@@ -148,14 +139,6 @@ const required = t(locale, 'contact.required');
   /* "I'm open to:" sits right on top of its list. */
   .intro .open-to {
     margin-bottom: 0.25em;
-  }
-
-  /* Like the About title (SPEC 2.3). */
-  .greeting {
-    font-size: 1.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    line-height: 1.3;
   }
 
   .intro ul {
@@ -277,8 +260,7 @@ const required = t(locale, 'contact.required');
     .contact {
       grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
       gap: 80px;
-      max-width: 880px;
-      padding: 64px 0 0;
+      max-width: 804px; /* the About page's width, so the title stays put between the two pages */
     }
   }
 </style>
