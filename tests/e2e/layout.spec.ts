@@ -14,6 +14,10 @@ test.describe('header', () => {
     await page.goto('/about/');
     await expect(page.getByRole('link', { name: 'About', exact: true })).toHaveAttribute('aria-current', 'page');
     await expect(work).not.toHaveAttribute('aria-current');
+    await page.goto('/contact/');
+    await expect(page.getByRole('link', { name: 'Contact', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('link', { name: 'About', exact: true })).not.toHaveAttribute('aria-current');
+    await expect(work).not.toHaveAttribute('aria-current');
     for (const path of ['/', '/postcards/', FIRST_WORK]) {
       await page.goto(path);
       await expect(work, path).toHaveAttribute('aria-current', 'true');
@@ -25,6 +29,7 @@ test.describe('header', () => {
     await page.goto('/about/');
     const items = [
       page.getByRole('link', { name: 'About', exact: true }),
+      page.getByRole('link', { name: 'Contact', exact: true }),
       page.locator('summary', { hasText: 'Work' }),
     ];
     for (const item of items) {
