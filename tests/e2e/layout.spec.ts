@@ -78,23 +78,25 @@ test('every page has a title and description in its language', async ({ page }) 
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Illustrator based in Taiwan/);
 
   await page.goto(FIRST_WORK);
-  await expect(page).toHaveTitle('Placeholder Street Corner — Yunya Hsu');
+  await expect(page).toHaveTitle('Lisbon — Yunya Hsu');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     'content',
-    'Placeholder Street Corner, 2025. Digital illustration.',
+    'Lisbon, 2026. Digital illustration.',
   );
 });
 
-test.describe('while placeholder content exists', () => {
-  test('pages are noindex', async ({ page }) => {
+test.describe('with no placeholder content left', () => {
+  test('pages can be indexed', async ({ page }) => {
     for (const path of allPages) {
       await page.goto(path);
-      await expect(page.locator('meta[name="robots"]'), path).toHaveAttribute('content', 'noindex');
+      await expect(page.locator('meta[name="robots"]'), path).toHaveCount(0);
     }
   });
 
-  test('robots.txt blocks all crawlers', async ({ request }) => {
-    expect(await (await request.get('/robots.txt')).text()).toBe('User-agent: *\nDisallow: /\n');
+  test('robots.txt allows all crawlers and points to the sitemap', async ({ request }) => {
+    expect(await (await request.get('/robots.txt')).text()).toBe(
+      `User-agent: *\nAllow: /\n\nSitemap: ${SITE}/sitemap-index.xml\n`,
+    );
   });
 });
 
@@ -208,7 +210,7 @@ test('under 1024px the page starts 32px below the dark header band', async ({ pa
   if (!isMobile) await page.setViewportSize({ width: 800, height: 1000 });
   for (const [path, first] of [
     ['/', '.wall .cell'],
-    ['/works/placeholder-1/', '.artwork'],
+    ['/works/lisbon/', '.artwork'],
   ]) {
     await page.goto(path);
     const header = (await page.getByRole('banner').boundingBox())!;

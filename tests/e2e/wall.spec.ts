@@ -6,13 +6,13 @@ test('home is the Limited Edition Prints wall, in order, with title and year und
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Limited Edition Prints');
   await expect(page).toHaveTitle('Yunya Hsu — Illustration');
-  await expect(works(page)).toHaveCount(5);
+  await expect(works(page)).toHaveCount(21);
   const first = works(page).first();
-  await expect(first.getByRole('link')).toHaveAttribute('href', '/works/placeholder-1/');
-  await expect(first.locator('.title')).toHaveText('Placeholder Street Corner');
-  await expect(first.locator('.year')).toHaveText('2025');
-  await expect(first.getByRole('img')).toHaveAttribute('alt', 'Placeholder colour gradient');
-  await expect(works(page).nth(1).getByRole('link')).toHaveAttribute('href', '/works/placeholder-2/');
+  await expect(first.getByRole('link')).toHaveAttribute('href', '/works/rainforest/');
+  await expect(first.locator('.title')).toHaveText('Rainforest');
+  await expect(first.locator('.year')).toHaveText('2026');
+  await expect(first.getByRole('img')).toHaveAttribute('alt', /^Palm fronds/);
+  await expect(works(page).nth(1).getByRole('link')).toHaveAttribute('href', '/works/barber/');
 });
 
 test('/postcards/ shows only postcards', async ({ page }) => {
@@ -20,7 +20,7 @@ test('/postcards/ shows only postcards', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Postcards');
   await expect(page).toHaveTitle('Postcards — Yunya Hsu');
   const links = await works(page).getByRole('link').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  expect(links).toEqual(['/works/placeholder-4/', '/works/placeholder-7/', '/works/placeholder-8/']);
+  expect(links).toEqual(['/works/band/', '/works/cat/', '/works/halloween/', '/works/vegetables/', '/works/zebra/', '/works/namaste/']);
 });
 
 test('the category name is a heading for screen readers only', async ({ page }) => {
@@ -32,7 +32,7 @@ test('the wall works without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto('/postcards/');
-  await expect(works(page)).toHaveCount(3);
+  await expect(works(page)).toHaveCount(6);
   await context.close();
 });
 
@@ -80,7 +80,7 @@ test.describe('grid', () => {
   test('titles in the same row line up, 20px below the cell', async ({ page, isMobile }) => {
     test.skip(isMobile, 'one column has no rows to compare');
     await page.goto('/');
-    // The first row mixes a portrait, a landscape and a square work.
+    // The first row mixes portrait and landscape works.
     const tops = await page.locator('.wall .title').evaluateAll((titles) =>
       titles.slice(0, 3).map((t) => t.getBoundingClientRect().top),
     );
@@ -94,6 +94,6 @@ test.describe('grid', () => {
   test('loads the first row eagerly and lazy-loads the rest', async ({ page }) => {
     await page.goto('/');
     const loading = await page.locator('.wall img').evaluateAll((imgs) => imgs.map((i) => i.getAttribute('loading')));
-    expect(loading).toEqual(['eager', 'eager', 'eager', 'lazy', 'lazy']);
+    expect(loading).toEqual([...Array(3).fill('eager'), ...Array(18).fill('lazy')]);
   });
 });
