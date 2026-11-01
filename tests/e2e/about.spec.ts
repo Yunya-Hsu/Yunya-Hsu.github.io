@@ -44,21 +44,6 @@ test('from 600px the text is on the left and the photo beside it, with their top
   }
 });
 
-test('from 600px the bio stands at the foot of the photo while the title stays at the top', async ({
-  page,
-  isMobile,
-}) => {
-  test.skip(isMobile, 'phones stack them');
-  for (const width of [1440, 800]) {
-    await page.setViewportSize({ width, height: 900 });
-    const avatar = await box(page.getByRole('img', { name: 'Photo of Yunya Hsu' }));
-    const title = await box(page.getByRole('heading', { name: 'About', level: 1 }));
-    const last = await box(page.getByRole('main').locator('p').last());
-    expect(Math.abs(last.y + last.height - (avatar.y + avatar.height)), `at ${width}px`).toBeLessThan(10);
-    expect(title.y, `at ${width}px`).toBeCloseTo(avatar.y, 0);
-  }
-});
-
 test('on phones the photo hangs centred under the text, 240px wide and 40px below it', async ({ page, isMobile }) => {
   test.skip(!isMobile, 'phone layout');
   const column = await box(page.locator('.about'));
@@ -97,14 +82,13 @@ test('the title is visible, in the About style, over a 32px rule', async ({ page
   expect(rule).toEqual({ width: '32px', height: '1px', background: 'rgb(47, 44, 39)' });
 });
 
-test('shows the final bio in the small text of the About and Contact pages', async ({ page }) => {
+test('shows the bio in the small text of the About and Contact pages', async ({ page }) => {
   const paragraphs = page.getByRole('main').locator('p');
-  await expect(paragraphs).toHaveCount(2);
-  await expect(paragraphs.first()).toContainText("I'm Yunya Hsu, an illustrator based in Taiwan.");
+  await expect(paragraphs).toHaveCount(3);
+  await expect(paragraphs.first()).toContainText("I'm Yunya Hsu, an illustrator and software engineer based in Taiwan");
   await expect(paragraphs.first()).toHaveCSS('font-size', '15px');
-  await expect(paragraphs.nth(1)).toHaveText(
-    'By day I work as a software engineer. Drawing is how I slow down and pay attention.',
-  );
+  await expect(paragraphs.nth(1)).toContainText('If I can do it, so can you :)');
+  await expect(paragraphs.nth(2)).toContainText('Procreate is my main tool');
 });
 
 test('the page starts 48px from the top beside the sidebar, 32px below the header band otherwise', async ({

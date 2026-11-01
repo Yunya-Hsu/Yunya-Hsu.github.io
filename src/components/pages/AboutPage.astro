@@ -78,22 +78,6 @@ const avatar = getAvatar();
     .avatar {
       width: 100%;
     }
-
-    /* As tall as the photo: the title at its top, the bio at its foot. */
-    .page-text {
-      display: flex;
-      flex-direction: column;
-      align-self: stretch;
-    }
-
-    .page-title + p {
-      margin-top: auto;
-    }
-
-    /* Past the space under the letters, so the last line stands level with the photo's foot. */
-    p:last-child {
-      margin-bottom: -0.58em;
-    }
   }
 
   @media (min-width: 1024px) {

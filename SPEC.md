@@ -254,29 +254,35 @@
 ### 5.4 關於我
 
 - 版面（2026-11-01 Yunya 決定：原本全部置中、圓形頭像，Yunya 覺得文字置中不好看，改成照片加靠左的文字）：
-  - 平板和桌機（600px 以上）：**文字在左，照片在右**，文字全部靠左。標題和照片頂端對齊；自我介紹靠下，最後一行的基線和照片底部切齊（2026-11-01 Yunya 決定）。文字比照片高時（很窄的平板），自我介紹就接在標題下方。整塊最寬 804px，在內容區置中。照片寬：桌機（1024px 以上）260px、平板 220px；間距：桌機 64px、平板 48px。
+  - 平板和桌機（600px 以上）：**文字在左，照片在右**，文字全部靠左。標題和照片頂端對齊，自我介紹接在標題下方（舊版文字比照片短時，Yunya 要自我介紹靠下、和照片底部切齊；現在的文字比照片高，靠下對齊沒有作用，已拿掉；如果文字改短，要恢復靠下對齊）。整塊最寬 804px，在內容區置中。照片寬：桌機（1024px 以上）260px、平板 220px；間距：桌機 64px、平板 48px。
   - 手機（小於 600px）：文字在上，文字靠左；下方 40px 接照片，照片寬 240px、水平置中（2026-11-01 Yunya 從並排的候選中選定）。試過但不喜歡或沒選的：照片滿版（太大）、照片靠左（右邊空一塊）、文字繞著照片排（行寬太碎）、照片和標題同一列。
   - 照片要小（2026-11-01 Yunya 決定：試過桌機 320px、手機滿版，太大）。也試過照片在左，Yunya 選了文字在左、照片在右。
 - 頭像：直式長方形，4:5（同作品牆的格子），方角，加 2.1 作品牆的陰影，像版畫掛在牆上。用 Yunya 提供的照片（2026-11-01，取代原本的 IG 頭像插畫），裁成看得到全身和上方屋瓦的構圖（Yunya 要求人不要太大），右邊的另一個人不入鏡。存成 `src/assets/avatar.jpg`（800 × 1000，sRGB）。repo 是公開的，圖檔不留 EXIF 等 metadata；原始的 HEIC 不進 repo。
 - 標題：文字樣式見 2.3，細線是主要文字色、1px，靠左，距離標題 20px，距離自我介紹 28px（數值來自原型 B）。樣式在 `global.css` 的 `.page-title`，和 404 頁共用。
-- 自我介紹文字：用下方的定稿，以第一人稱書寫。文字樣式和聯絡頁相同（2.3），段落之間 1em。
+- 自我介紹文字：用下方的版本，以第一人稱書寫，風格溫暖、像在說自己的故事（2026-11-01 Yunya 提供參考範例和個人資料後改寫，是第 2 節「文字極少」的例外）。文字樣式和聯絡頁相同（2.3），段落之間 1em。
 - **不放聯絡方式**（2026-10-26 Yunya 決定：Instagram、Threads 已經在每一頁的頁尾，見 5.1；聯絡頁會放在頁首導覽，見 5.5）。**不放 email。**
   - Instagram：`https://www.instagram.com/yours_yunya/`
   - Threads：`https://www.threads.com/@yours_yunya`
 
 #### 自我介紹（定稿）
 
+2026-11-01 Yunya 確認。程式裡的文字在 `src/i18n/about.ts`。
+
 **English**
 
-> I'm Yunya Hsu, an illustrator based in Taiwan. I draw the quiet moments of everyday life and travel — street corners, café tables, musicians mid-song, flowers by the window — with loose ink lines and layered, textured color.
+> I'm Yunya Hsu, an illustrator and software engineer based in Taiwan, where I live with my husband and our two cats. (I love cats so much that I'm hoping for a third 🐈‍⬛.)
 >
-> By day I work as a software engineer. Drawing is how I slow down and pay attention.
+> Art wasn't really my thing growing up. But sometime after I turned 30, I got the urge to pick up a brush, and... ta-da! If I can do it, so can you :)
+>
+> My drawings come from daily life and travel, and I love using vivid colors. Procreate is my main tool, though I've also started trying watercolor, crayons and colored pencils.
 
 **中文**
 
-> 我是 Yunya Hsu，住在台灣的插畫家。我畫日常與旅途中安靜的片刻：街角、咖啡館的桌邊、正在演奏的樂手、窗邊的花。用鬆鬆的墨線，和一層層疊上的色彩質地。
+> 我是 Yunya Hsu，住在台灣的插畫家，也是軟體工程師。我和先生、兩隻貓住在一起。（我非常喜歡貓咪，希望能再養第三隻 🐈‍⬛。）
 >
-> 白天我是軟體工程師；畫畫，是我放慢腳步、好好觀察世界的方式。
+> 小時候我對藝術沒什麼感覺，過了 30 歲卻突然很想拿起畫筆，然後……噹噹！我可以，你一定也可以 :)
+>
+> 我的畫來自生活和旅行，也喜歡使用鮮豔的色彩。Procreate 是我主要的創作工具，最近也開始嘗試水彩、蠟筆和彩色鉛筆。
 
 ### 5.5 聯絡頁
 
