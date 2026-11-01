@@ -32,6 +32,8 @@
   --color-placeholder: #dcd6ca;
   --color-hover-bg: #4a453d; /* hover patch on the wall, e.g. in the Work menu (SPEC 2.5) */
   --color-hover-text: #fff;
+  --color-field-bg: #f8f6f1; /* contact form fields, a shade lighter than the wall (SPEC 5.5) */
+  --color-field-border: #857467; /* 3.7:1 on the wall: enough to see the field's edge (WCAG 1.4.11) */
 
   /* The dark frame: the sidebar, or the top header and footer band on smaller screens (SPEC 2.1). */
   --color-chrome-bg: #45403a;

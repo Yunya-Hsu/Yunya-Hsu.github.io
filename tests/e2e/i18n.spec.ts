@@ -9,7 +9,7 @@ test('English home is at / with lang="en"', async ({ page }) => {
 });
 
 test('the Chinese pages are not built', async ({ request }) => {
-  for (const path of ['/zh/', '/zh/about/', '/zh/works/placeholder-1/']) {
+  for (const path of ['/zh/', '/zh/about/', '/zh/contact/', '/zh/works/placeholder-1/']) {
     expect((await request.get(path)).status(), path).toBe(404);
   }
 });
