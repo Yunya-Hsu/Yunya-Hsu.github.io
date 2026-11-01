@@ -300,8 +300,8 @@
   - 欄位沒填或 Email 格式錯誤時，用瀏覽器內建的提示擋下，不會送出。
 - 寄給 Yunya 的信，主旨固定是「New message from Yours, Yunya」。
 - Formspree 的表單 ID 是 `mrppykoe`（2026-11-01 Yunya 提供），寫在 `src/lib/contact.ts`。
+- Formspree 後台的 CAPTCHA 是關閉的（2026-11-01 Yunya 確認）。沒有 JavaScript 時表單會送到 Formspree 自己的頁面，CAPTCHA 開著的話那裡會載入 reCAPTCHA，違反第 8 節，所以要保持關閉。
 - `TODO` 等 Yunya 確認：
-  - Formspree 後台要關掉 reCAPTCHA（沒有 JavaScript 時，Formspree 自己的頁面可能會跳出 reCAPTCHA）。
   - 左邊的文字（第一人稱）放在 `src/i18n/contact.ts`。英文已定稿（2026-11-01 Yunya 確認；結尾句由 Claude 改成「I'd love to hear from you!」）。中文要等中文版發布前再確認。
 
 ## 6. 作品資料
